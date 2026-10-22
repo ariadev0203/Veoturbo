@@ -14,7 +14,7 @@ nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--c);bord
 dialog{width:min(560px,94vw);border:0;border-radius:14px;background:var(--bg);color:var(--t);padding:12px}table{width:100%;border-collapse:collapse;font-size:13px}td{padding:4px 2px;border-bottom:1px solid #0001}
 </style></head><body>
 <header id="h">Veo Turbo</header><main id="v"></main>
-<nav><button data-t="r" class="on">Relances</button><button data-t="c">Clients</button><button data-t="p">Réglages</button></nav>
+<nav><button data-t="h" class="on">Accueil</button><button data-t="r">Relances</button><button data-t="c">Clients</button><button data-t="p">Compte</button></nav>
 <dialog id="d"></dialog>
 <script>
 const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -22,12 +22,12 @@ const idb=()=>new Promise((ok,ko)=>{const r=indexedDB.open("veoturbo",1);r.onupg
 const kget=async k=>{const d=await idb();return new Promise(ok=>{const q=d.transaction("k").objectStore("k").get(k);q.onsuccess=()=>ok(q.result)})};
 const kset=async(k,v)=>{const d=await idb();return new Promise(ok=>{const t=d.transaction("k","readwrite");t.objectStore("k").put(v,k);t.oncomplete=ok})};
 const TPL="Bonjour {nom}, votre abonnement Canal+ {etat}. {offre}Réabonnez-vous dès maintenant, nous restons à votre service.";
-let DB={tx:[],cl:{},done:{},sync:null,tpl:TPL,user:""},tab="r",flt="3",q="",tok=null,cred=null,CL=[];
+let DB={tx:[],cl:{},done:{},sync:null,tpl:TPL,user:"",sv:{}},tab="h",flt="3",q="",tok=null,cred=null,CL=[];
 const save=()=>kset("db",DB);
-async function api(path,method="GET",body){
+async function api(path,method="GET",body,blob){
   const go=()=>fetch("/.netlify/functions/veo",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({path,method,body,token:tok})});
   let r=await go();if(r.status===401&&cred&&path!=="/auth/login"){await login(cred.u,cred.p);r=await go()}
-  if(!r.ok)throw new Error(r.status===401?"Identifiants refusés":"Erreur "+r.status);return r.json()}
+  if(!r.ok){let m="";try{m=String((await r.json()).message||"")}catch{}throw new Error(r.status===401?"Identifiants refusés":(m||"Erreur "+r.status))}return blob?r.blob():r.json()}
 async function login(u,p){const j=await api("/auth/login","POST",{username:u,password:p});tok=j.token;cred={u,p};DB.user=u}
 const pd=s=>{const m=/(\d+)\/(\d+)\/(\d+)/.exec(s||"");return m?new Date(+m[3],m[2]-1,+m[1]).getTime():0};
 const fd=t=>t?new Date(t).toLocaleDateString("fr-FR"):"—";
@@ -43,24 +43,24 @@ const msg=c=>DB.tpl.replace("{nom}",c.name||"").replace("{etat}",c.days>=0?(c.da
 const wa=c=>"https://wa.me/"+tel(c.phone)+"?text="+encodeURIComponent(msg(c));
 const col=c=>c.days==null?"#888":c.days<0?"var(--r)":c.days<=3?"var(--o)":"var(--g)";
 const lab=c=>c.days==null?"inconnu":c.days<0?"échu "+-c.days+" j":c.days+" j restants";
-const todo=()=>CL.filter(c=>c.days!=null&&c.days>=0&&c.days<=3&&DB.done[c.dec]!==c.last).length;
+const todo=()=>CL.filter(c=>(c.days!=null&&c.days>=0&&c.days<=3&&DB.done[c.dec]!==c.last)||(DB.sv[c.dec]?.rappel&&DB.sv[c.dec].rappel<=new Date().toISOString().slice(0,10))).length;
 function view(){build();const n=todo();document.querySelectorAll("nav button").forEach(b=>{b.classList.toggle("on",b.dataset.t===tab);if(b.dataset.t==="r")b.textContent="Relances"+(n?" ("+n+")":"")});
-  $("#v").innerHTML=tab==="p"?vset():(tab==="r"?vrel():vcli())}
-function item(c){return `<div class="card" onclick="fiche('${esc(c.dec)}')"><div class="row"><b>${esc(c.name||"Sans nom")}</b><span class="b" style="background:${col(c)}">${lab(c)}</span></div><div class="m">${esc(c.pack)} • décodeur ${esc(c.dec)} • ${esc(c.phone)}</div><div class="m">Fin ≈ ${fd(c.end)}${DB.done[c.dec]===c.last?" • relancé":""}</div></div>`}
+  $("#v").innerHTML=tab==="p"?vcompte():tab==="h"?vh():(tab==="r"?vrel():vcli())}
+function item(c){return `<div class="card" onclick="fiche('${esc(c.dec)}')"><div class="row"><b>${esc(c.name||"Sans nom")}</b><span class="b" style="background:${col(c)}">${lab(c)}</span></div><div class="m">${esc(c.pack)} • décodeur ${esc(c.dec)} • ${esc(c.phone)}</div><div class="m">Fin ≈ ${fd(c.end)}${DB.done[c.dec]===c.last?" • relancé":""}${DB.sv[c.dec]?.etat?" • "+esc(DB.sv[c.dec].etat):""}${DB.sv[c.dec]?.rappel?" • rappel "+esc(DB.sv[c.dec].rappel):""}</div></div>`}
 const search=()=>`<input placeholder="Rechercher nom, téléphone, décodeur" value="${esc(q)}" oninput="q=this.value;list()">`;
-function vrel(){return `<div class="chips">${[["3","À relancer (≤3 j)"],["x","Échus"],["o","Échus +90 j"],["a","Tous"]].map(([k,t])=>`<button class="${flt===k?"on":""}" onclick="flt='${k}';view()">${t}</button>`).join("")}</div>${search()}<div id="l"></div>`}
+function vrel(){return `<div class="chips">${[["3","À relancer (≤3 j)"],["x","Échus"],["o","Échus +90 j"],["p","Rappels"],["a","Tous"]].map(([k,t])=>`<button class="${flt===k?"on":""}" onclick="flt='${k}';view()">${t}</button>`).join("")}</div>${search()}<div id="l"></div>`}
 const vcli=()=>`${search()}<div id="l"></div>`;
-function list(){const s=q.toLowerCase();let a=CL.filter(c=>!s||[c.name,c.phone,c.dec,c.sub].join(" ").toLowerCase().includes(s));
-  if(tab==="r"){a=a.filter(c=>c.days!=null&&(flt==="a"||(flt==="3"?c.days>=0&&c.days<=3:flt==="x"?c.days<0&&c.days>=-90:c.days<-90)));if(flt!=="a"&&!s)a=a.filter(c=>DB.done[c.dec]!==c.last);a.sort((x,y)=>x.days-y.days)}else a.sort((x,y)=>(y.tx[0].at)-(x.tx[0].at));
-  $("#l").innerHTML=(a.slice(0,150).map(item).join("")||`<p class="m">Aucun résultat. Importez vos abonnés dans Réglages.</p>`)+(a.length>150?`<p class="m">${a.length-150} autres : affinez la recherche.</p>`:"")}
+function list(){const s=q.toLowerCase(),td=new Date().toISOString().slice(0,10),rap=c=>{const r=DB.sv[c.dec]?.rappel;return r&&r<=td};let a=CL.filter(c=>!s||[c.name,c.phone,c.dec,c.sub].join(" ").toLowerCase().includes(s));
+  if(tab==="r"){a=a.filter(c=>flt==="p"?rap(c):c.days!=null&&(flt==="a"||(flt==="3"?c.days>=0&&c.days<=3:flt==="x"?c.days<0&&c.days>=-90:c.days<-90)));if(flt!=="a"&&flt!=="p"&&!s)a=a.filter(c=>DB.done[c.dec]!==c.last);a.sort((x,y)=>(x.days??9e9)-(y.days??9e9))}else a.sort((x,y)=>y.tx[0].at-x.tx[0].at);
+  $("#l").innerHTML=(a.slice(0,150).map(item).join("")||`<p class="m">Aucun résultat. Importez vos abonnés dans Compte.</p>`)+(a.length>150?`<p class="m">${a.length-150} autres : affinez la recherche.</p>`:"")}
 function fiche(d){const c=CL.find(x=>x.dec===d);if(!c)return;const dlg=$("#d");
   dlg.innerHTML=`<h3>${esc(c.name||"Client")}</h3><div class="m">Décodeur ${esc(c.dec)} • abonné ${esc(c.sub)}<br>Fin ${c.exact?"":"≈ "}${fd(c.end)} (${lab(c)}) • total payé ${c.paid} FCFA${c.promo?`<br>Promo : ${esc(JSON.stringify(c.promo))}`:""}</div>
   <input id="fn" value="${esc(c.name)}" placeholder="Nom"><input id="fp" value="${esc(c.phone)}" placeholder="Téléphone"><textarea id="fo" rows="2" placeholder="Notes">${esc(c.note)}</textarea>
-  <div class="row"><button onclick="sv('${esc(d)}')">Enregistrer</button><button class="s" onclick="chk('${esc(d)}')">Vérifier l’échéance</button></div>
-  <div class="row" style="margin-top:8px"><button onclick="rel('${esc(d)}')">Relancer WhatsApp</button><button class="s" onclick="$('#d').close()">Fermer</button></div><p id="fs" class="m"></p>
+  <select id="fe">${["","Relancé","Intéressé","Rappeler","Pas intéressé","Réabonné"].map(x=>`<option ${(DB.sv[d]?.etat||"")===x?"selected":""}>${x}</option>`).join("")}</select><input id="fr" type="date" value="${esc(DB.sv[d]?.rappel||"")}"><div class="m">Suivi et date de rappel</div><div class="row"><button onclick="sv('${esc(d)}')">Enregistrer</button><button class="s" onclick="chk('${esc(d)}')">Vérifier l’échéance</button></div>
+  <div class="row" style="margin-top:8px"><button onclick="rel('${esc(d)}')">Relancer WhatsApp</button><button class="s" onclick="renew('${esc(d)}')">Réabonner</button><button class="s" onclick="$('#d').close()">Fermer</button></div><p id="fs" class="m"></p>
   <table>${c.tx.map(t=>`<tr><td>${fd(t.at)}</td><td>${esc(t.pack)}</td><td>${t.amount}</td><td>${esc(t.meth||"")}</td><td>${esc(t.pay||t.st)}</td></tr>`).join("")}</table>`;dlg.showModal()}
-function sv(d){const o=DB.cl[d]=DB.cl[d]||{};o.name=$("#fn").value;o.phone=$("#fp").value;o.note=$("#fo").value;save();$("#d").close();view();list()}
-function rel(d){const c=CL.find(x=>x.dec===d);DB.cl[d]={...(DB.cl[d]||{}),name:$("#fn").value,phone:$("#fp").value};build();const c2=CL.find(x=>x.dec===d);DB.done[d]=c2.last;save();window.open(wa(c2),"_blank");$("#d").close();view();list()}
+function sv(d){const o=DB.cl[d]=DB.cl[d]||{};o.name=$("#fn").value;o.phone=$("#fp").value;o.note=$("#fo").value;DB.sv[d]={etat:$("#fe").value,rappel:$("#fr").value};save();$("#d").close();view();list()}
+function rel(d){const c=CL.find(x=>x.dec===d);DB.cl[d]={...(DB.cl[d]||{}),name:$("#fn").value,phone:$("#fp").value};build();const c2=CL.find(x=>x.dec===d);DB.done[d]=c2.last;DB.sv[d]={...(DB.sv[d]||{}),etat:"Relancé"};save();window.open(wa(c2),"_blank");$("#d").close();view();list()}
 async function chk(d){const s=$("#fs");try{if(!tok)throw new Error("Connectez-vous dans Réglages");s.textContent="Vérification…";const j=await api("/cga-subs/init/v2","POST",{decoder_number:d}),sb=j.subscriber||{},o=DB.cl[d]=DB.cl[d]||{};
   build();const c=CL.find(x=>x.dec===d);o.end=pd(sb.contract?.subscription_date?.end||sb.subscription_date?.end);o.endTx=c.last;if(sb.phone)o.phone=sb.phone;o.promo=sb.contract?.promo?.length?sb.contract.promo:undefined;
   if(sb.customer&&!o.name)o.name=((sb.customer.first_name||"")+" "+(sb.customer.last_name||"")).trim();save();s.textContent="Échéance exacte : "+fd(o.end);view();list()}catch(e){s.textContent=e.message}}
@@ -68,12 +68,47 @@ function vset(){return `<div class="card"><b>Connexion Veo Pro</b><input id="u" 
   <div class="card"><b>Message de relance</b><textarea id="tp" rows="4" onchange="DB.tpl=this.value;save()">${esc(DB.tpl)}</textarea><div class="m">Variables : {nom} {etat} {offre}</div></div>
   <div class="card"><b>Notifications</b><p class="m">Alerte à l’ouverture pour les abonnements arrivant à échéance.</p><button class="s" onclick="Notification.requestPermission().then(notif)">Activer</button></div>
   <div class="card"><b>Sauvegarde</b><div class="row"><button class="s" onclick="bk()">Exporter</button><input type="file" id="fi" accept=".json" onchange="rs(this.files[0])"></div></div>`}
-async function doSync(){const st=$("#st");try{await login($("#u").value.trim(),$("#p").value);const known=new Set(DB.tx.map(t=>t.id));let page=1,add=0;
-  for(;page<400;page++){st.textContent="Import page "+page+"… ("+add+" nouveaux)";const j=await api(`/cga-subs?page=${page}&limit=100&sort=id,DESC`),d=(j.data||[]).filter(x=>!known.has(x.id));if(!d.length)break;d.forEach(x=>{known.add(x.id);DB.tx.push(map(x))});add+=d.length}
-  DB.tx=[...new Map(DB.tx.map(t=>[t.id,t])).values()];DB.sync=Date.now();await save();view();$("#st")&&($("#st").textContent="Terminé : "+add+" nouvelles opérations.")}catch(e){st.textContent=e.message}}
+async function imp(cb){const known=new Set(DB.tx.filter(t=>t.pay!=="PENDING").map(t=>t.id));let add=0;for(let page=1;page<400;page++){cb&&cb(page,add);const j=await api(`/cga-subs?page=${page}&limit=100&sort=id,DESC`),d=(j.data||[]).filter(x=>!known.has(x.id));if(!d.length)break;d.forEach(x=>{known.add(x.id);DB.tx.push(map(x))});add+=d.length}
+  DB.tx=[...new Map(DB.tx.map(t=>[t.id,t])).values()];DB.sync=Date.now();await save();return add}
+const qsync=()=>imp().then(view);
+async function doSync(){const st=$("#st");try{await login($("#u").value.trim(),$("#p").value);const n=await imp((p,a)=>st.textContent="Import page "+p+"… ("+a+" nouveaux)");view();loadAcc();$("#st")&&($("#st").textContent="Terminé : "+n+" opérations ajoutées ou mises à jour.")}catch(e){st.textContent=e.message}}
 function bk(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(DB)]));a.download="veoturbo-sauvegarde.json";a.click()}
 async function rs(f){if(f){DB=JSON.parse(await f.text());await save();view()}}
 function notif(){const n=todo();if(n&&window.Notification&&Notification.permission==="granted")new Notification("Veo Turbo",{body:n+" abonnement(s) à relancer (≤ 3 jours)"})}
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;view();if($("#l"))list()});
-(async()=>{DB={...DB,...(await kget("db")||{})};view();if($("#l"))list();notif();if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js")})();
+const money=n=>Number(n||0).toLocaleString("fr-FR")+" FCFA";
+function vh(){const d=new Date(),m=new Date(d.getFullYear(),d.getMonth(),1).getTime(),j=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();let a=0,b=0;for(const t of DB.tx)if(t.pay==="SUCCESSFUL"){if(t.at>=m)a+=t.amount;if(t.at>=j)b+=t.amount}
+  return `<div class="card" style="background:var(--g);color:#fff"><div class="m" style="color:#fffc">Chiffre d’affaires (opérations importées)</div><div class="row"><div><b style="font-size:22px">${money(a)}</b><div class="m" style="color:#fffc">ce mois</div></div><div><b>${money(b)}</b><div class="m" style="color:#fffc">aujourd’hui</div></div></div></div>
+  <div class="card"><b>Réabonnement</b><input id="sq" placeholder="N° décodeur, téléphone, e-mail ou n° d’abonné" onkeydown="if(event.key==='Enter')srch()"><button onclick="srch()">Rechercher</button><div id="sr"></div></div>
+  <div class="card"><b>Dernières opérations</b>${[...DB.tx].sort((x,y)=>y.at-x.at).slice(0,8).map(t=>`<div class="row m" style="margin:6px 0"><span>${fd(t.at)} ${esc(t.name||t.dec)}<br>${esc(t.pack)} ${t.amount} • ${esc(t.pay||t.st)}</span><button class="s" onclick="inv(${t.id})">Facture</button></div>`).join("")||"<p class='m'>Importez vos données dans Compte.</p>"}</div>`}
+function fnd(o,k,r=[]){if(o&&typeof o==="object")for(const x in o){if(x===k&&o[x])r.push(String(o[x]));else fnd(o[x],k,r)}return r}
+async function srch(){const v=$("#sq").value.trim(),s=$("#sr");if(!v)return;try{let ids=/^\d{14}$/.test(v)?[v]:[];
+  if(!ids.length&&tok){s.textContent="Recherche…";const j=await api("/cga-subs/subscriber?search_value="+encodeURIComponent(v));ids=[...new Set(fnd(j,"decoder_number"))]}
+  if(!ids.length)ids=[...new Set(CL.filter(c=>[c.phone,c.name,c.sub,c.dec].join(" ").toLowerCase().includes(v.toLowerCase())).map(c=>c.dec))].slice(0,6);
+  s.innerHTML=ids.length?ids.map(d=>`<button class="s" style="margin:6px 6px 0 0" onclick="renew('${esc(d)}')">${esc(d)}</button>`).join(""):"Aucun abonné trouvé."+(tok?"":" Connectez-vous dans Compte pour chercher chez Veo.")}catch(e){s.textContent=e.message}}
+let RN=null;
+async function renew(d){const dlg=$("#d");dlg.innerHTML="<p>Chargement…</p>";if(!dlg.open)dlg.showModal();try{if(!tok)throw new Error("Connectez-vous dans Compte");const j=await api("/cga-subs/init/v2","POST",{decoder_number:d}),sb=j.subscriber||{},pk=sb.packs?.packs?.RENEWAL||[],op=sb.packs?.options?.RENEWAL||[];RN={id:j.identifier,d,pk,op};
+  dlg.innerHTML=`<h3>Réabonnement</h3><div class="m">${esc(((sb.customer?.first_name||"")+" "+(sb.customer?.last_name||"")).trim())} • décodeur ${esc(d)}<br>Offre actuelle ${esc(sb.option)} • fin ${esc(sb.subscription_date?.end||"")} • ${esc(sb.contract?.active?.label||"")}${sb.contract?.promo?.length?`<br><b>Promotion :</b> ${esc(JSON.stringify(sb.contract.promo))}`:""}</div>
+  <select id="rp" onchange="rcalc()">${pk.map(p=>`<option value="${esc(p.identifier)}">${esc(p.label)} — ${p.price} FCFA</option>`).join("")}</select><select id="rd" onchange="rcalc()">${[1,2,3,6,12].map(n=>`<option value="${n}">${n} mois</option>`).join("")}</select><div id="ro"></div>
+  <select id="rm"><option value="MOMO">MTN Mobile Money</option><option value="OM">Orange Money</option></select><input id="rn" inputmode="tel" placeholder="Numéro de paiement (9 chiffres)" value="${esc(sb.phone_without_prefix||"")}"><p id="rt"><b></b></p>
+  <div class="row"><button id="rb" onclick="rgo()">Payer</button><button class="s" onclick="$('#d').close()">Annuler</button></div><p id="rs" class="m"></p>`;rcalc()}catch(e){dlg.innerHTML=`<p>${esc(e.message)}</p><button onclick="$('#d').close()">Fermer</button>`}}
+function rcalc(){const p=RN.pk.find(x=>x.identifier===$("#rp").value);$("#ro").innerHTML=RN.op.filter(o=>!o.allowed_for_pack||o.allowed_for_pack===p.identifier).map(o=>`<label class="m" style="display:block"><input type="checkbox" value="${esc(o.identifier)}" data-p="${o.price}" onchange="rtot()" style="width:auto"> ${esc(o.label)} +${o.price}</label>`).join("");rtot()}
+function rtot(){const p=RN.pk.find(x=>x.identifier===$("#rp").value),n=+$("#rd").value,o=[...document.querySelectorAll("#ro input:checked")].reduce((s,i)=>s+ +i.dataset.p,0);$("#rt b").textContent="Total estimé : "+money((p.price+o)*n)+" (montant final confirmé par Veo)"}
+async function rgo(){const p=RN.pk.find(x=>x.identifier===$("#rp").value),n=+$("#rd").value,num=$("#rn").value.replace(/\D/g,"").replace(/^237/,""),m=$("#rm").value,opts=[...document.querySelectorAll("#ro input:checked")].map(i=>i.value),s=$("#rs");
+  if(num.length!==9){s.textContent="Numéro de paiement invalide (9 chiffres).";return}
+  if(!confirm("Confirmer le paiement ?\n"+p.label+" × "+n+" mois\nDécodeur "+RN.d+"\n"+(m==="OM"?"Orange Money ":"MTN MoMo ")+num))return;
+  $("#rb").disabled=true;try{const r=await api("/cga-subs/confirm/v2","POST",{identifier:RN.id,duration:n,pack_identifier:p.identifier,pack_options:opts,payment_account_number:num,payment_method:m,subscription_type:"RENEWAL",source:"MOBILE_APP",phone:num});
+  s.textContent="Demande envoyée ("+money(r.amount)+"). Validez le paiement sur votre téléphone…";
+  for(let i=0;i<24;i++){await new Promise(z=>setTimeout(z,5000));const l=await api("/cga-subs?page=1&limit=5&sort=id,DESC"),x=(l.data||[]).find(y=>y.id===r.id),st=x?.transaction?.status||x?.subscription_status;s.textContent="Statut : "+st;
+   if(x&&st!=="PENDING"){await qsync();s.innerHTML="Statut : "+esc(st)+` <button class="s" onclick="inv(${r.id})">Facture</button>`;return}}
+  s.textContent+=" — encore en attente : ne relancez pas le paiement, vérifiez dans Dernières opérations."}catch(e){s.textContent=e.message+" (vérifiez dans Dernières opérations avant de réessayer)"}}
+async function inv(id){try{if(!tok)throw new Error("Connectez-vous dans Compte");const b=await api("/cga-subs/"+id+"/pdf","GET",null,true),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="facture-"+id+".pdf";a.click()}catch(e){alert(e.message)}}
+function vcompte(){return `<div class="card"><b>Commissions et retraits</b><div id="cm" class="m">Chargement…</div><select id="wt"><option value="COMMISSION">Commission</option><option value="BALANCE">Solde</option></select><input id="wa" type="number" inputmode="numeric" placeholder="Montant à retirer (FCFA)"><button onclick="wd()">Retirer vers mon numéro</button></div>`+vset()}
+async function loadAcc(){const e=$("#cm");if(!e)return;if(!tok){e.textContent="Connectez-vous ci-dessous pour voir soldes et retraits.";return}
+  try{const[h,t]=await Promise.all([api("/users/balance-histories?limit=30"),api("/transfers?page=1&limit=8&sort=id,DESC&sub_merchant_id=-1")]),b={};for(const x of h.data||[])b[x.balance_type]??=x.balance_after;
+  e.innerHTML=(Object.entries(b).map(([k,v])=>"<b>"+esc(k)+"</b> : "+money(v)).join(" • ")||"Aucun solde trouvé")+"<br>Derniers retraits :<br>"+(t.data||[]).map(x=>fd(+x.created_at||Date.parse(x.created_at))+" "+money(x.amount)+" "+esc(x.balance_type)+" "+esc(x.transaction?.status)).join("<br>")}catch(x){e.textContent=x.message}}
+async function wd(){const a=Math.floor(+$("#wa").value),t=$("#wt").value;if(!(a>0))return alert("Montant invalide");if(!tok)return alert("Connectez-vous d’abord");
+  if(!confirm("Retirer "+money(a)+" ("+t+") vers votre numéro "+DB.user+" ?\nFrais ≈ 2 % : "+money(Math.round(a*2)/100)))return;
+  try{const r=await api("/transfers/user-balance","POST",{amount:a,balance_type:t});alert("Retrait lancé : "+(r.transaction?.status||"ok"));loadAcc()}catch(e){alert(e.message)}}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;view();if($("#l"))list();if(tab==="p")loadAcc()});
+(async()=>{DB={...DB,...(await kget("db")||{})};DB.sv=DB.sv||{};view();if($("#l"))list();notif();if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js")})();
 </script></body></html>
