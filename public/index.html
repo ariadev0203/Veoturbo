@@ -1,0 +1,79 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Veo Turbo</title>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0f7a4d">
+<style>
+:root{--g:#0f7a4d;--bg:#f3f6f4;--t:#16231c;--c:#fff;--m:#6b7a72;--r:#c0392b;--o:#d9822b}
+@media(prefers-color-scheme:dark){:root{--bg:#101714;--t:#e6efe9;--c:#18221d;--m:#8fa196}}
+*{box-sizing:border-box}body{margin:0;font:15px system-ui,sans-serif;background:var(--bg);color:var(--t);padding-bottom:70px}
+header{background:var(--g);color:#fff;padding:12px 14px;font-weight:700;position:sticky;top:0;z-index:5}
+main{padding:10px;max-width:720px;margin:auto}.card{background:var(--c);border-radius:12px;padding:12px;margin:8px 0;box-shadow:0 1px 3px #0002}
+button,input,textarea,select{font:inherit;color:inherit}button{border:0;border-radius:10px;padding:9px 12px;background:var(--g);color:#fff;font-weight:600}
+button.s{background:#0000;color:var(--g);border:1px solid var(--g)}input,textarea,select{width:100%;padding:9px;border:1px solid #8a998f;border-radius:10px;background:var(--c);margin:4px 0}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--c);border-top:1px solid #0002}nav button{flex:1;background:none;color:var(--m);border-radius:0;padding:14px 4px}nav button.on{color:var(--g);border-top:3px solid var(--g)}
+.row{display:flex;gap:8px;align-items:center;justify-content:space-between}.m{color:var(--m);font-size:13px}.b{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;color:#fff}
+.chips{display:flex;gap:6px;overflow:auto;padding:4px 0}.chips button{white-space:nowrap;background:var(--c);color:var(--t);border:1px solid #8a998f}.chips button.on{background:var(--g);color:#fff}
+dialog{width:min(560px,94vw);border:0;border-radius:14px;background:var(--bg);color:var(--t);padding:12px}table{width:100%;border-collapse:collapse;font-size:13px}td{padding:4px 2px;border-bottom:1px solid #0001}
+</style></head><body>
+<header id="h">Veo Turbo</header><main id="v"></main>
+<nav><button data-t="r" class="on">Relances</button><button data-t="c">Clients</button><button data-t="p">Réglages</button></nav>
+<dialog id="d"></dialog>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const idb=()=>new Promise((ok,ko)=>{const r=indexedDB.open("veoturbo",1);r.onupgradeneeded=()=>r.result.createObjectStore("k");r.onsuccess=()=>ok(r.result);r.onerror=ko});
+const kget=async k=>{const d=await idb();return new Promise(ok=>{const q=d.transaction("k").objectStore("k").get(k);q.onsuccess=()=>ok(q.result)})};
+const kset=async(k,v)=>{const d=await idb();return new Promise(ok=>{const t=d.transaction("k","readwrite");t.objectStore("k").put(v,k);t.oncomplete=ok})};
+const TPL="Bonjour {nom}, votre abonnement Canal+ {etat}. {offre}Réabonnez-vous dès maintenant, nous restons à votre service.";
+let DB={tx:[],cl:{},done:{},sync:null,tpl:TPL,user:""},tab="r",flt="3",q="",tok=null,cred=null,CL=[];
+const save=()=>kset("db",DB);
+async function api(path,method="GET",body){
+  const go=()=>fetch("/.netlify/functions/veo",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({path,method,body,token:tok})});
+  let r=await go();if(r.status===401&&cred&&path!=="/auth/login"){await login(cred.u,cred.p);r=await go()}
+  if(!r.ok)throw new Error(r.status===401?"Identifiants refusés":"Erreur "+r.status);return r.json()}
+async function login(u,p){const j=await api("/auth/login","POST",{username:u,password:p});tok=j.token;cred={u,p};DB.user=u}
+const pd=s=>{const m=/(\d+)\/(\d+)\/(\d+)/.exec(s||"");return m?new Date(+m[3],m[2]-1,+m[1]).getTime():0};
+const fd=t=>t?new Date(t).toLocaleDateString("fr-FR"):"—";
+const tel=p=>{p=String(p||"").replace(/\D/g,"");return p.length===9?"237"+p:p};
+const map=x=>({id:x.id,dec:x.decoder_number,sub:x.subscriber_number,name:x.data?.customer_name||"",phone:x.data?.subscription?.phone||"",pack:x.pack_label,amount:x.amount,period:x.period||1,type:x.subscription_type,st:x.subscription_status,pay:x.transaction?.status,meth:x.transaction?.method,at:+x.created_at||Date.parse(x.created_at),prev:x.data?.subscription_end||""});
+function build(){const m={};for(const t of DB.tx)(m[t.dec]??={dec:t.dec,tx:[]}).tx.push(t);
+  CL=Object.values(m).map(c=>{c.tx.sort((a,b)=>b.at-a.at);const ok=c.tx.filter(t=>t.pay==="SUCCESSFUL"),l=ok[0]||c.tx[0],o=DB.cl[c.dec]||{};
+    c.name=o.name||l.name;c.phone=o.phone||l.phone;c.note=o.note||"";c.pack=l.pack;c.last=c.tx[0].id;c.promo=o.promo;
+    c.end=o.end&&o.endTx===c.last?o.end:(ok[0]?Math.max(pd(ok[0].prev),ok[0].at)+30*ok[0].period*864e5:0);c.exact=!!(o.end&&o.endTx===c.last);
+    c.days=c.end?Math.ceil((c.end-Date.now())/864e5):null;c.paid=ok.reduce((s,t)=>s+t.amount,0);return c});}
+const offre=c=>c.days>=0&&c.days<=3?"Semaine généreuse : 1 semaine Tout canal+ offerte. ":c.days<-90?"Offre spéciale : 21 jours Tout canal+. ":"";
+const msg=c=>DB.tpl.replace("{nom}",c.name||"").replace("{etat}",c.days>=0?(c.days===0?"expire aujourd’hui":"expire dans "+c.days+" jour"+(c.days>1?"s":"")):"est échu depuis "+(-c.days)+" jours").replace("{offre}",offre(c));
+const wa=c=>"https://wa.me/"+tel(c.phone)+"?text="+encodeURIComponent(msg(c));
+const col=c=>c.days==null?"#888":c.days<0?"var(--r)":c.days<=3?"var(--o)":"var(--g)";
+const lab=c=>c.days==null?"inconnu":c.days<0?"échu "+-c.days+" j":c.days+" j restants";
+const todo=()=>CL.filter(c=>c.days!=null&&c.days>=0&&c.days<=3&&DB.done[c.dec]!==c.last).length;
+function view(){build();const n=todo();document.querySelectorAll("nav button").forEach(b=>{b.classList.toggle("on",b.dataset.t===tab);if(b.dataset.t==="r")b.textContent="Relances"+(n?" ("+n+")":"")});
+  $("#v").innerHTML=tab==="p"?vset():(tab==="r"?vrel():vcli())}
+function item(c){return `<div class="card" onclick="fiche('${esc(c.dec)}')"><div class="row"><b>${esc(c.name||"Sans nom")}</b><span class="b" style="background:${col(c)}">${lab(c)}</span></div><div class="m">${esc(c.pack)} • décodeur ${esc(c.dec)} • ${esc(c.phone)}</div><div class="m">Fin ≈ ${fd(c.end)}${DB.done[c.dec]===c.last?" • relancé":""}</div></div>`}
+const search=()=>`<input placeholder="Rechercher nom, téléphone, décodeur" value="${esc(q)}" oninput="q=this.value;list()">`;
+function vrel(){return `<div class="chips">${[["3","À relancer (≤3 j)"],["x","Échus"],["o","Échus +90 j"],["a","Tous"]].map(([k,t])=>`<button class="${flt===k?"on":""}" onclick="flt='${k}';view()">${t}</button>`).join("")}</div>${search()}<div id="l"></div>`}
+const vcli=()=>`${search()}<div id="l"></div>`;
+function list(){const s=q.toLowerCase();let a=CL.filter(c=>!s||[c.name,c.phone,c.dec,c.sub].join(" ").toLowerCase().includes(s));
+  if(tab==="r"){a=a.filter(c=>c.days!=null&&(flt==="a"||(flt==="3"?c.days>=0&&c.days<=3:flt==="x"?c.days<0&&c.days>=-90:c.days<-90)));if(flt!=="a"&&!s)a=a.filter(c=>DB.done[c.dec]!==c.last);a.sort((x,y)=>x.days-y.days)}else a.sort((x,y)=>(y.tx[0].at)-(x.tx[0].at));
+  $("#l").innerHTML=(a.slice(0,150).map(item).join("")||`<p class="m">Aucun résultat. Importez vos abonnés dans Réglages.</p>`)+(a.length>150?`<p class="m">${a.length-150} autres : affinez la recherche.</p>`:"")}
+function fiche(d){const c=CL.find(x=>x.dec===d);if(!c)return;const dlg=$("#d");
+  dlg.innerHTML=`<h3>${esc(c.name||"Client")}</h3><div class="m">Décodeur ${esc(c.dec)} • abonné ${esc(c.sub)}<br>Fin ${c.exact?"":"≈ "}${fd(c.end)} (${lab(c)}) • total payé ${c.paid} FCFA${c.promo?`<br>Promo : ${esc(JSON.stringify(c.promo))}`:""}</div>
+  <input id="fn" value="${esc(c.name)}" placeholder="Nom"><input id="fp" value="${esc(c.phone)}" placeholder="Téléphone"><textarea id="fo" rows="2" placeholder="Notes">${esc(c.note)}</textarea>
+  <div class="row"><button onclick="sv('${esc(d)}')">Enregistrer</button><button class="s" onclick="chk('${esc(d)}')">Vérifier l’échéance</button></div>
+  <div class="row" style="margin-top:8px"><button onclick="rel('${esc(d)}')">Relancer WhatsApp</button><button class="s" onclick="$('#d').close()">Fermer</button></div><p id="fs" class="m"></p>
+  <table>${c.tx.map(t=>`<tr><td>${fd(t.at)}</td><td>${esc(t.pack)}</td><td>${t.amount}</td><td>${esc(t.meth||"")}</td><td>${esc(t.pay||t.st)}</td></tr>`).join("")}</table>`;dlg.showModal()}
+function sv(d){const o=DB.cl[d]=DB.cl[d]||{};o.name=$("#fn").value;o.phone=$("#fp").value;o.note=$("#fo").value;save();$("#d").close();view();list()}
+function rel(d){const c=CL.find(x=>x.dec===d);DB.cl[d]={...(DB.cl[d]||{}),name:$("#fn").value,phone:$("#fp").value};build();const c2=CL.find(x=>x.dec===d);DB.done[d]=c2.last;save();window.open(wa(c2),"_blank");$("#d").close();view();list()}
+async function chk(d){const s=$("#fs");try{if(!tok)throw new Error("Connectez-vous dans Réglages");s.textContent="Vérification…";const j=await api("/cga-subs/init/v2","POST",{decoder_number:d}),sb=j.subscriber||{},o=DB.cl[d]=DB.cl[d]||{};
+  build();const c=CL.find(x=>x.dec===d);o.end=pd(sb.contract?.subscription_date?.end||sb.subscription_date?.end);o.endTx=c.last;if(sb.phone)o.phone=sb.phone;o.promo=sb.contract?.promo?.length?sb.contract.promo:undefined;
+  if(sb.customer&&!o.name)o.name=((sb.customer.first_name||"")+" "+(sb.customer.last_name||"")).trim();save();s.textContent="Échéance exacte : "+fd(o.end);view();list()}catch(e){s.textContent=e.message}}
+function vset(){return `<div class="card"><b>Connexion Veo Pro</b><input id="u" placeholder="Numéro" value="${esc(DB.user)}" inputmode="tel"><input id="p" type="password" placeholder="Mot de passe" autocomplete="current-password"><button onclick="doSync()">Connexion et import</button><p class="m" id="st">${DB.sync?"Dernier import : "+new Date(DB.sync).toLocaleString("fr-FR")+" • "+DB.tx.length+" opérations • "+CL.length+" clients":"Aucun import."}</p></div>
+  <div class="card"><b>Message de relance</b><textarea id="tp" rows="4" onchange="DB.tpl=this.value;save()">${esc(DB.tpl)}</textarea><div class="m">Variables : {nom} {etat} {offre}</div></div>
+  <div class="card"><b>Notifications</b><p class="m">Alerte à l’ouverture pour les abonnements arrivant à échéance.</p><button class="s" onclick="Notification.requestPermission().then(notif)">Activer</button></div>
+  <div class="card"><b>Sauvegarde</b><div class="row"><button class="s" onclick="bk()">Exporter</button><input type="file" id="fi" accept=".json" onchange="rs(this.files[0])"></div></div>`}
+async function doSync(){const st=$("#st");try{await login($("#u").value.trim(),$("#p").value);const known=new Set(DB.tx.map(t=>t.id));let page=1,add=0;
+  for(;page<400;page++){st.textContent="Import page "+page+"… ("+add+" nouveaux)";const j=await api(`/cga-subs?page=${page}&limit=100&sort=id,DESC`),d=(j.data||[]).filter(x=>!known.has(x.id));if(!d.length)break;d.forEach(x=>{known.add(x.id);DB.tx.push(map(x))});add+=d.length}
+  DB.tx=[...new Map(DB.tx.map(t=>[t.id,t])).values()];DB.sync=Date.now();await save();view();$("#st")&&($("#st").textContent="Terminé : "+add+" nouvelles opérations.")}catch(e){st.textContent=e.message}}
+function bk(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(DB)]));a.download="veoturbo-sauvegarde.json";a.click()}
+async function rs(f){if(f){DB=JSON.parse(await f.text());await save();view()}}
+function notif(){const n=todo();if(n&&window.Notification&&Notification.permission==="granted")new Notification("Veo Turbo",{body:n+" abonnement(s) à relancer (≤ 3 jours)"})}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;view();if($("#l"))list()});
+(async()=>{DB={...DB,...(await kget("db")||{})};view();if($("#l"))list();notif();if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js")})();
+</script></body></html>
