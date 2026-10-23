@@ -593,6 +593,9 @@ h1{font-size:clamp(24px,7.5vw,34px)}
   <div class="acts"><button class="btn alt" id="pimgb" type="button">Choisir une image</button><button class="btn alt" id="pimgr" type="button">Retirer</button></div>
   <input id="pimgf" type="file" accept="image/*" hidden>
   <div class="msg" id="pimgm" style="margin:6px 4px 0"></div>
+  <label for="wapp">Application WhatsApp</label>
+  <select id="wapp"><option value="wa">WhatsApp</option><option value="w4b">WhatsApp Business (Android)</option></select>
+  <div class="msg" style="margin:6px 4px 0">WhatsApp Business : la conversation directe avec le client s’ouvre dans cette application. Pour l’image, choisissez WhatsApp Business dans le partage.</div>
   <label for="wmode">Envoi WhatsApp + image</label>
   <select id="wmode"><option value="ensemble">Image + texte ensemble, comme un message illustré (recommandé)</option><option value="msg">Message d'abord : conversation du client avec le texte prêt, image à part </option><option value="apercu">Message + lien d'aperçu de la bannière</option><option value="joint">Image jointe : partage, choisir le contact</option></select>
   <div class="msg" style="margin:6px 4px 0">Image + texte ensemble : le bouton WhatsApp envoie la bannière et le message en un seul envoi (le contact se choisit dans WhatsApp). Sur Android le message devient la légende de l'image ; sur iPhone, WhatsApp ignore souvent la légende, donc le message est inscrit sous la bannière dans une seule image. Message d'abord : le bouton WhatsApp ouvre toujours la conversation avec le texte ; le bouton Image partage ensuite l'image (choisir WhatsApp puis la conversation). Aperçu : ajoute le lien de banniere.jpg au message. Jointe : partage image + texte, le contact se choisit dans WhatsApp.</div>
@@ -1098,7 +1101,7 @@ function fvGo(r,gest){if(relPend||!r.rem)return;const canal=r.rem.canal==="sms"?
   if(gest){if(canal==="sms")$("sms").click();else $("wai").click();return}
   const txt=$("lt").value.trim();if(!txt){say("lmm","Le message est vide.","err");return}
   startPend(canal==="sms"?"SMS":"WhatsApp");
-  location.href=canal==="sms"?smsUrl([phone()],txt):"https://wa.me/"+phone()+"?text="+encodeURIComponent(txt)}
+  location.href=canal==="sms"?smsUrl([phone()],txt):waLink(phone(),txt)}
 setInterval(fvTick,2e4);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)setTimeout(fvTick,800)});
 setTimeout(fvTick,2500);
@@ -1668,12 +1671,17 @@ $("lnx").onclick=()=>{if(blockPend())return;if(!relOrder.length)return;
 /* WhatsApp + image en 1 clic.
    « aperçu » (défaut) : ouvre la conversation du client avec le message suivi de l'adresse de banniere.jpg (hébergée avec l'application) : WhatsApp affiche l'image dans une carte d'aperçu.
    « joint » : partage du fichier image avec le texte par le système (le contact se choisit dans WhatsApp). */
+const wApp=()=>{try{return localStorage.getItem(K("clara_wapp"))==="w4b"?"w4b":"wa"}catch(e){return"wa"}};
+$("wapp").value=wApp();$("wapp").onchange=()=>{try{localStorage.setItem(K("clara_wapp"),$("wapp").value)}catch(e){}};
+function waLink(p,t){const web="https://wa.me/"+p+"?text="+encodeURIComponent(t);
+  if(wApp()==="w4b"&&/Android/i.test(navigator.userAgent))return"intent://send?phone="+p+"&text="+encodeURIComponent(t)+"#Intent;scheme=whatsapp;package=com.whatsapp.w4b;S.browser_fallback_url="+encodeURIComponent(web)+";end";
+  return web}
 const wMode=()=>{try{const v=localStorage.getItem(K("clara_wm"));return v==="joint"||v==="apercu"||v==="msg"?v:"ensemble"}catch(e){return"ensemble"}};
 $("wmode").onchange=()=>{try{localStorage.setItem(K("clara_wm"),$("wmode").value)}catch(e){}};
 $("wai").onclick=async()=>{
   const p=phone();
   if(!p){say("lmm","Cet abonné n'a pas de numéro de téléphone.","err");return}
-  const txt=$("lt").value.trim(),chat=t=>"https://wa.me/"+p+"?text="+encodeURIComponent(t),
+  const txt=$("lt").value.trim(),chat=t=>waLink(p,t),
     go_=u=>{const w=window.open(u,"_blank","noopener");if(!w)location.href=u};
   if(!txt){say("lmm","Le message est vide.","err");return}
   /* Image + texte en un seul envoi (légende sur Android, image composée sur iPhone) ; le contact se choisit dans WhatsApp */
@@ -1925,13 +1933,16 @@ function loadGsi(){return new Promise((res,rej)=>{if(window.google&&google.accou
   const s=document.createElement("script");s.src="https://accounts.google.com/gsi/client";s.async=true;s.onload=()=>res();
   s.onerror=()=>rej(Object.assign(new Error("gsi"),{net:true}));document.head.appendChild(s)})}
 function gAuth(interactive){if(gTok&&Date.now()<gExp-6e4)return Promise.resolve(gTok);
+  if(!gTok){try{const c=JSON.parse(sessionStorage.getItem("clara_gtk")||"null");if(c&&c.e>Date.now()+6e4){gTok=c.t;gExp=c.e;return Promise.resolve(gTok)}}catch(e){}}
+  /* Synchronisation automatique : jamais de fenêtre Google sans action de votre part (elle s'ouvrait à chaque activité) */
+  if(!interactive)return Promise.reject(Object.assign(new Error("silent"),{auth:true}));
   return loadGsi().then(()=>new Promise((res,rej)=>{
     const tc=google.accounts.oauth2.initTokenClient({client_id:gCid(),scope:GSCOPE,
-      callback:r=>{if(r&&r.access_token){gTok=r.access_token;gExp=Date.now()+(+r.expires_in||3600)*1e3;res(gTok)}else rej(Object.assign(new Error("denied"),{auth:true}))},
+      callback:r=>{if(r&&r.access_token){gTok=r.access_token;gExp=Date.now()+(+r.expires_in||3600)*1e3;try{sessionStorage.setItem("clara_gtk",JSON.stringify({t:gTok,e:gExp}))}catch(e){}res(gTok)}else rej(Object.assign(new Error("denied"),{auth:true}))},
       error_callback:e=>rej(Object.assign(new Error(e&&e.type||"auth"),{auth:true}))});
     tc.requestAccessToken(Object.assign({prompt:interactive?"":"none"},gMail()?{hint:gMail()}:{}))}))}
 async function gFetch(t,url,opt){const o=opt||{};const r=await fetch(url,{...o,headers:{Authorization:"Bearer "+t,...(o.headers||{})}});
-  if(r.status===401){gTok=null;throw Object.assign(new Error("401"),{auth:true})}
+  if(r.status===401){gTok=null;try{sessionStorage.removeItem("clara_gtk")}catch(e){}throw Object.assign(new Error("401"),{auth:true})}
   if(!r.ok)throw Object.assign(new Error("api"),{st:r.status});return r}
 async function gFolder(t){
   const q=encodeURIComponent("name='CLARA' and mimeType='application/vnd.google-apps.folder' and trashed=false");
@@ -1988,13 +1999,13 @@ $("gcon").onclick=async()=>{if(!gCid()){gUI("noid");return}
 $("gsy").onclick=()=>gSync(true);
 $("gdis").onclick=()=>{try{localStorage.removeItem(K("clara_gd"))}catch(e){}
   try{if(gTok&&window.google&&google.accounts&&google.accounts.oauth2)google.accounts.oauth2.revoke(gTok,()=>{})}catch(e){}
-  gTok=null;gExp=0;$("gsb").hidden=true;gUI("off")};
+  gTok=null;gExp=0;try{sessionStorage.removeItem("clara_gtk")}catch(e){}$("gsb").hidden=true;gUI("off")};
 function gBoot(){if(gOn())setTimeout(()=>gSync(false),1200);gUI()}
 window.addEventListener("online",()=>{if(token&&gOn())gSched()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token&&gOn()){const m=gMeta();if(!m.last||Date.now()-m.last>6e4)gSched()}});
 
 /* ===== PWA : installation et mises à jour (hébergement https uniquement) ===== */
-const APP_VERSION="3.2.0";
+const APP_VERSION="3.3.0";
 if(/netlify/i.test(location.hostname))document.documentElement.classList.add("nb");   /* le badge « Powered by Netlify » masque le bas de l'écran */
 let swReg=null,dip=null,updating=false;
 function showUpd(w){$("upd").hidden=false;$("updb").onclick=()=>{updating=true;w.postMessage("SKIP_WAITING")}}

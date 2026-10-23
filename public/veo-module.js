@@ -71,34 +71,47 @@
     const box = $q("vr"); if (!d) { box.innerHTML = '<div class="msg">Saisissez un numéro de décodeur.</div>'; return; }
     box.innerHTML = '<div class="msg">Chargement…</div>';
     try {
-      const j = await api("/cga-subs/init/v2", "POST", { decoder_number: d }), sb = j.subscriber || {}, pk = sb.packs?.packs?.RENEWAL || [], op = sb.packs?.options?.RENEWAL || [];
-      RN = { id: j.identifier, d, pk, op, name: ((sb.customer?.first_name || "") + " " + (sb.customer?.last_name || "")).trim() };
+      const j = await api("/cga-subs/init/v2", "POST", { decoder_number: d }), sb = j.subscriber || {}, P = sb.packs?.packs || {}, O = sb.packs?.options || {};
+      const types = ["RENEWAL", "UPGRADE"].filter(t => (P[t] || []).length);
+      if (!types.length) throw new Error("Aucune offre disponible chez Veo pour ce décodeur.");
+      RN = { id: j.identifier, d, P, O, types, type: types[0], sel: new Set(), name: ((sb.customer?.first_name || "") + " " + (sb.customer?.last_name || "")).trim() };
       box.innerHTML = `<div class="msg" style="margin:8px 0">${E(RN.name)} • offre ${E(sb.option)} • fin ${E(sb.subscription_date?.end || "")} • ${E(sb.contract?.active?.label || "")}${sb.contract?.promo?.length ? "<br><b>Promotion :</b> " + E(JSON.stringify(sb.contract.promo)) : ""}</div>
-      <label for="vpk">Offre</label><select id="vpk">${pk.map(p => `<option value="${E(p.identifier)}">${E(p.label)} — ${p.price} FCFA</option>`).join("")}</select>
-      <label for="vdu">Durée</label><select id="vdu">${[1, 2, 3, 6, 12].map(n => `<option value="${n}">${n} mois</option>`).join("")}</select><div id="vop"></div>
+      <label>Type de souscription</label><div class="seg" id="vty" role="group" aria-label="Type de souscription">${types.map(t => `<button type="button" data-t="${t}" aria-pressed="${t === RN.type}">${TL[t]}</button>`).join("")}</div>
+      <label for="vpk">Offre</label><select id="vpk"></select>
+      <label for="vdu">Durée</label><select id="vdu">${[1, 2, 3, 6, 12].map(n => `<option value="${n}">${n} mois</option>`).join("")}</select>
+      <label>Options (touchez pour choisir)</label><div class="seg" id="vop" role="group" aria-label="Options" style="flex-wrap:wrap"></div>
       <label for="vmt">Paiement</label><select id="vmt"><option value="MOMO">MTN Mobile Money</option><option value="OM">Orange Money</option></select>
       <label for="vnp">Numéro qui paie (9 chiffres)</label><input id="vnp" type="tel" inputmode="tel" value="${E(ls("veo_payer"))}" placeholder="6XXXXXXXX">
       <div class="msg" id="vtt" style="margin:8px 0"></div><div class="acts"><button class="btn" id="vpay" type="button">Payer</button></div><div class="msg" id="vst" role="status"></div>`;
-      $q("vpk").onchange = $q("vdu").onchange = opts; $q("vpay").onclick = pay; opts();
+      $q("vty").querySelectorAll("button").forEach(b => b.onclick = () => setType(b.dataset.t));
+      $q("vpk").onchange = () => { RN.sel.clear(); opts(); }; $q("vdu").onchange = tot; $q("vpay").onclick = pay; setType(RN.type);
     } catch (e) { box.innerHTML = `<div class="msg err">${E(e.message)}</div>`; }
   }
+  const TL = { RENEWAL: "Réabonnement", UPGRADE: "Migration" };
+  function setType(t) {
+    RN.type = t; RN.sel.clear();
+    $q("vty").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === t)));
+    $q("vpk").innerHTML = RN.P[t].map(p => `<option value="${E(p.identifier)}">${E(p.label)} — ${p.price} FCFA</option>`).join(""); opts();
+  }
+  const curPack = () => (RN.P[RN.type] || []).find(x => x.identifier === $q("vpk").value);
+  const curOpts = () => { const p = curPack(); return (RN.O[RN.type] || []).filter(o => !o.allowed_for_pack || o.allowed_for_pack === p?.identifier); };
   function opts() {
-    const p = RN.pk.find(x => x.identifier === $q("vpk").value);
-    $q("vop").innerHTML = RN.op.filter(o => !o.allowed_for_pack || o.allowed_for_pack === p?.identifier).map(o => `<label style="display:block;margin:6px 0"><input type="checkbox" value="${E(o.identifier)}" data-p="${o.price}" style="width:auto;margin-right:6px"> ${E(o.label)} +${o.price}</label>`).join("");
-    $q("vop").querySelectorAll("input").forEach(i => i.onchange = tot); tot();
+    const box = $q("vop"), L = curOpts();
+    box.innerHTML = L.length ? L.map(o => `<button type="button" data-id="${E(o.identifier)}" aria-pressed="${RN.sel.has(o.identifier)}">${RN.sel.has(o.identifier) ? "✓ " : ""}${E(o.label)} +${o.price}</button>`).join("") : '<span class="msg">Aucune option pour cette offre.</span>';
+    box.querySelectorAll("button").forEach(b => b.onclick = () => { const id = b.dataset.id; RN.sel.has(id) ? RN.sel.delete(id) : RN.sel.add(id); opts(); }); tot();
   }
   function tot() {
-    const p = RN.pk.find(x => x.identifier === $q("vpk").value), n = +$q("vdu").value, o = [...$q("vop").querySelectorAll("input:checked")].reduce((s, i) => s + +i.dataset.p, 0);
-    $q("vtt").textContent = p ? "Total estimé : " + money((p.price + o) * n) + " (montant final confirmé par Veo)" : "";
+    const p = curPack(), n = +$q("vdu").value, o = curOpts().filter(x => RN.sel.has(x.identifier)).reduce((s, x) => s + x.price, 0);
+    $q("vtt").textContent = p ? TL[RN.type] + " : total estimé " + money((p.price + o) * n) + " (montant final confirmé par Veo)" : "";
   }
   async function pay() {
-    const p = RN.pk.find(x => x.identifier === $q("vpk").value), n = +$q("vdu").value, m = $q("vmt").value, s = $q("vst"),
-      num = $q("vnp").value.replace(/\D/g, "").replace(/^237/, ""), op = [...$q("vop").querySelectorAll("input:checked")].map(i => i.value);
+    const p = curPack(), n = +$q("vdu").value, m = $q("vmt").value, s = $q("vst"), type = RN.type,
+      num = $q("vnp").value.replace(/\D/g, "").replace(/^237/, ""), op = curOpts().filter(x => RN.sel.has(x.identifier)).map(x => x.identifier);
     if (num.length !== 9) { s.textContent = "Numéro de paiement invalide (9 chiffres)."; return; }
-    if (!confirm("Confirmer le paiement ?\n" + p.label + " × " + n + " mois\nDécodeur " + RN.d + "\n" + (m === "OM" ? "Orange Money " : "MTN MoMo ") + num)) return;
+    if (!confirm("Confirmer le paiement ?\n" + TL[type] + " : " + p.label + " × " + n + " mois" + (op.length ? " + " + op.length + " option(s)" : "") + "\nDécodeur " + RN.d + "\n" + (m === "OM" ? "Orange Money " : "MTN MoMo ") + num)) return;
     $q("vpay").disabled = true; ls("veo_payer", num);
     try {
-      const r = await api("/cga-subs/confirm/v2", "POST", { identifier: RN.id, duration: n, pack_identifier: p.identifier, pack_options: op, payment_account_number: num, payment_method: m, subscription_type: "RENEWAL", source: "MOBILE_APP", phone: num });
+      const r = await api("/cga-subs/confirm/v2", "POST", { identifier: RN.id, duration: n, pack_identifier: p.identifier, pack_options: op, payment_account_number: num, payment_method: m, subscription_type: type, source: "MOBILE_APP", phone: num });
       s.textContent = "Demande envoyée (" + money(r.amount) + "). Validez le paiement sur votre téléphone…";
       for (let i = 0; i < 24; i++) {
         await new Promise(z => setTimeout(z, 5000));
@@ -106,7 +119,7 @@
         s.textContent = "Statut : " + st;
         if (x && st !== "PENDING") {
           ITEMS[r.id] = x; s.innerHTML = "Statut : " + E(st) + ` <button class="btn alt sm" type="button" id="vfa">Facture Veo</button> <button class="btn sm" type="button" id="vfe">Facture entreprise</button>`; $q("vfa").onclick = () => inv(r.id); $q("vfe").onclick = () => facEnt(r.id);
-          if (st === "SUCCESSFUL") { note(p.label + " × " + n + " mois"); vsync(RN.d).catch(() => {}); } recent(); return;
+          if (st === "SUCCESSFUL") { note(TL[type] + " : " + p.label + " × " + n + " mois"); vsync(RN.d).catch(() => {}); } recent(); return;
         }
       }
       s.textContent += " — toujours en attente : ne relancez pas le paiement, vérifiez dans Opérations récentes.";
@@ -176,4 +189,13 @@
   }
   chk("vc1", "fa");
   btn("fa", "vb1"); const rr = $q("rrl"); if (rr && rr.parentNode && !$q("vb2")) { const x = document.createElement("button"); x.type = "button"; x.id = "vb2"; x.className = "btn alt"; x.textContent = "Réabonner (Veo)"; x.onclick = () => open(typeof cur !== "undefined" && cur ? cur.numdecabo : ""); rr.parentNode.insertBefore(x, rr); }
+
+  /* Première connexion : proposer l'identification Veo (une seule fois par appareil, sauf si déjà identifié) */
+  const dg = document.createElement("dialog"); dg.id = "vinv";
+  dg.innerHTML = '<h2>Identification Veo Pro</h2><p class="msg">Identifiez-vous sur Veo Pro pour réabonner vos clients, obtenir les factures et vérifier les dates de fin.</p><div class="acts"><button class="btn" id="vi1" type="button">S’identifier maintenant</button><button class="btn alt" id="vi2" type="button">Plus tard</button></div>';
+  document.body.appendChild(dg);
+  $q("vi1").onclick = () => { dg.close(); go("veo"); };
+  $q("vi2").onclick = () => { dg.close(); ls("veo_later", "1"); };
+  let asked = false;
+  setInterval(() => { try { if (!asked && typeof token !== "undefined" && token && !vt && !ls("veo_user") && !ls("veo_later")) { asked = true; dg.showModal(); } } catch (e) {} }, 1500);
 })();
