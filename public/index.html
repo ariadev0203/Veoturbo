@@ -111,6 +111,7 @@ button.promo{display:block;width:100%;border:0;text-align:left;cursor:pointer;fo
 .sca{display:flex;gap:8px;margin-top:12px}.sca .btn{flex:1 1 0;min-width:0;white-space:nowrap;padding:10px 6px;font-size:14px;min-height:0;width:auto}
 .btn.sm{white-space:nowrap}.fgr{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin:6px 0 12px}.fgr small{display:block;color:var(--mute);font-size:12px}.fgr b{font-size:15px;overflow-wrap:anywhere;font-weight:600}
 .fed label{display:block;margin:10px 0 4px;font-size:13px;color:var(--mute)}.fq3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.fq3 .btn{white-space:nowrap;padding:10px 4px;font-size:14px;min-height:0;width:auto}.fhist{margin-top:14px;font-size:13px;color:var(--mute)}.fhist div{padding:4px 0;border-top:1px solid var(--line)}
+[data-p="reabo"] .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}[data-p="reabo"] .acts .btn{white-space:nowrap;padding:12px 6px;min-height:0;width:auto;font-size:15px}[data-p="reabo"] .acts #vb2,[data-p="reabo"] .acts #rsv{grid-column:1/-1}
 .fch{max-height:92vh;overflow:auto}
 .fch .fh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .fch .fh small{display:block;letter-spacing:.12em;font-weight:700;color:var(--mute);font-size:13px;margin-bottom:6px}
@@ -419,6 +420,7 @@ h1{font-size:clamp(24px,7.5vw,34px)}
   <button class="btn alt sm" id="hsup" type="button" style="margin:0 0 14px">Assistance technique WhatsApp</button>
   <button type="button" class="promo" id="wb" data-to="histo" hidden></button>
   <button type="button" class="promo" id="bkb" data-to="params" hidden></button>
+  <button type="button" class="promo" id="sb" data-to="histo" hidden></button>
   <button type="button" class="promo" id="gsb" data-to="params" hidden>Synchronisation Google Drive en pause : touchez pour reconnecter.</button>
   <h2 style="margin-top:8px">Recherche</h2>
   <div class="seg" id="wcrit" role="group" aria-label="Chercher par">
@@ -432,6 +434,7 @@ h1{font-size:clamp(24px,7.5vw,34px)}
     <button class="btn" id="wgo" type="button">Chercher</button>
   </div>
   <div class="msg" id="wm" role="status"></div>
+  <div id="wres"></div>
   <div class="fvh"><h2>Favoris</h2><button class="btn alt sm" id="fvadd" type="button">+ Ajouter</button></div>
   <div id="wfav"></div>
   <div class="card fvpan" id="fvpick" hidden>
@@ -457,29 +460,7 @@ h1{font-size:clamp(24px,7.5vw,34px)}
   <div id="wact"></div>
 </section>
 
-<section data-p="search" hidden>
-  <h1>Recherche</h1>
-  <div class="msg" style="margin:-8px 4px 12px">Cherche sur le serveur et dans vos clients enregistrés sur cet appareil.</div>
-  <button type="button" class="promo" id="sb" data-to="histo" hidden></button>
-  <div class="seg" id="crit" role="group" aria-label="Chercher par">
-    <button type="button" data-k="abonne" aria-pressed="true">N° abonné</button>
-    <button type="button" data-k="decodeur" aria-pressed="false">N° décodeur</button>
-    <button type="button" data-k="tel" aria-pressed="false">Téléphone</button>
-    <button type="button" data-k="email" aria-pressed="false">Email</button>
-  </div>
-  <div class="row">
-    <input id="q" placeholder="N° abonné" inputmode="numeric" autocomplete="off" aria-label="Valeur à rechercher">
-    <button class="btn" id="go" type="button">Chercher</button>
-  </div>
-  <div class="msg" id="msg" role="status"></div>
-  <div id="list"></div>
-  <div class="card" id="card" hidden><dl id="fiche"></dl>
-    <div id="ra" hidden style="padding:6px 0 12px"><button class="btn react" id="rb" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg><span>Réactiver le décodeur</span></button><div class="react-note">Utile si l'abonnement est actif mais que l'écran reste noir.</div><div class="msg" id="rmsg" role="status"></div><a class="btn alt full" id="rwa" target="_blank" rel="noopener" hidden>Envoyer sur WhatsApp</a></div>
-  </div>
-  <div class="acts" id="fa" hidden><button class="btn" id="fsv" type="button">Enregistrer</button>
-    <button class="btn alt" id="fct" type="button">Modifier le contact</button>
-  </div>
-</section>
+
 
 <section data-p="reabo" hidden>
   <h1>Enregistrement</h1>
@@ -497,6 +478,7 @@ h1{font-size:clamp(24px,7.5vw,34px)}
   </div>
   <h2>Forfait</h2>
   <div class="card"><dl id="d2"></dl></div>
+  <div id="ra" hidden style="padding:6px 0 12px"><button class="btn react" id="rb" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg><span>Réactiver le décodeur</span></button><div class="react-note">Utile si l'abonnement est actif mais que l'écran reste noir.</div><div class="msg" id="rmsg" role="status"></div><a class="btn alt full" id="rwa" target="_blank" rel="noopener" hidden>Envoyer sur WhatsApp</a></div>
   <div id="pr" class="msg"></div>
   <div class="msg" id="rst" style="margin:8px 4px 0"></div>
   <div class="acts">
@@ -753,7 +735,6 @@ h1{font-size:clamp(24px,7.5vw,34px)}
 <div id="svtoast" role="status" hidden></div>
 <nav id="nav" aria-label="Pages">
   <button title="Accueil" type="button" data-to="home" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg><span>Accueil</span></button>
-  <button title="Recherche" type="button" data-to="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span>Recherche</span></button>
   <button title="Enregistrement" type="button" data-to="reabo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg><span>Enregistrement</span></button>
   <button title="Relance" type="button" data-to="relance"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span>Relance</span></button>
   <button title="Suivi abonnés" type="button" data-to="suivi"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 3-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 5a3.5 3.5 0 0 1 0 6.5M18 14.3c2 .7 3.5 2.6 3.5 5.7"/></svg><span>Suivi</span><b class="bdg" id="bd" hidden></b></button>
@@ -788,6 +769,7 @@ h1{font-size:clamp(24px,7.5vw,34px)}
 </div></div>
 </div>
 </main>
+<dialog id="ctdlg" aria-labelledby="ctt"><h2 id="ctt">Contact du client obligatoire</h2><p class="msg" id="ctp"></p><label for="cti">Téléphone du client</label><input id="cti" type="tel" inputmode="tel" placeholder="9 chiffres, ex. 671080340" autocomplete="off"><div class="msg" id="ctm" role="status"></div><div class="acts"><button class="btn" id="ctok" type="button">Enregistrer le client</button><button class="btn alt" id="ctno" type="button">Annuler</button></div></dialog>
 
 <script>
 const API="https://app.visionscanal.com";
@@ -1000,11 +982,7 @@ function showHome(){
 let wk="abonne";
 document.querySelectorAll("#wcrit button").forEach(b=>b.onclick=()=>{
   wk=b.dataset.k;document.querySelectorAll("#wcrit button").forEach(x=>x.setAttribute("aria-pressed",x===b));
-  $("wq").placeholder=HOLD[wk][0];$("wq").inputMode=HOLD[wk][1];$("wq").value="";say("wm","");$("wq").focus()});
-function wsearch(){const v=$("wq").value.trim();
-  if(!v){say("wm","Saisissez une valeur à rechercher.","err");return}
-  say("wm","");document.querySelector('#crit [data-k="'+wk+'"]').click();
-  $("q").value=v;go("search");search()}
+  $("wq").placeholder=HOLD[wk][0];$("wq").inputMode=HOLD[wk][1];$("wq").value="";say("wm","");$("wres").innerHTML="";$("wq").focus()});
 $("wgo").onclick=wsearch;$("wq").onkeydown=e=>{if(e.key==="Enter")wsearch()};
 $("wout").onclick=()=>logout("");
 
@@ -1182,12 +1160,6 @@ function showConvert(){const f=$("cvf");if(!f.getAttribute("src"))f.src="convert
 window.addEventListener("message",e=>{const d=e.data,f=$("cvf");if(d&&d.clara==="star-pin"&&f&&e.source===f.contentWindow&&gOn()){const m=gMeta();m.spinTs=Date.now();m.dirty=true;putMeta();gSched()}if(d&&d.clara==="convert-h"&&f&&e.source===f.contentWindow)f.style.height=Math.max(d.h,300)+"px"});
 document.querySelectorAll("[data-to]").forEach(b=>b.onclick=()=>go(b.dataset.to));
 
-/* Recherche : enregistrements de l'appareil + serveur */
-document.querySelectorAll("#crit button").forEach(b=>b.onclick=()=>{
-  crit=b.dataset.k;document.querySelectorAll("#crit button").forEach(x=>x.setAttribute("aria-pressed",x===b));
-  $("q").placeholder=HOLD[crit][0];$("q").inputMode=HOLD[crit][1];$("q").value="";
-  say("msg","");$("list").innerHTML="";$("card").hidden=true;$("fa").hidden=true;$("q").focus()});
-
 function norm(k,v){v=v.trim();
   if(k==="tel")return v.replace(/\D/g,"").replace(/^(00)?237(?=\d{9}$)/,"");
   if(k==="email")return v.toLowerCase();
@@ -1210,17 +1182,21 @@ function findLocal(c,v){
     if(sc===2)ex.push(r);else if(sc===1)pa.push(r)}
   return (ex.length?ex:pa).slice(0,30)}
 
-async function search(){
-  const v=norm(crit,$("q").value);
-  if(!v){say("msg","Saisissez une valeur à rechercher.","err");return}
-  $("go").disabled=true;$("list").innerHTML="";$("card").hidden=true;$("fa").hidden=true;say("msg","Recherche en cours…");
-  const loc=findLocal(crit,v);let srv=[],st="ok";
-  try{const r=await srvFind(FIELDS[crit],v);
+function nomDe(a){return a.name&&a.name.trim()?a.name.replace(/^[.\s]+/,""):((a.nom||"")+" "+(a.prenom||"")).trim()}
+function srvRec(a){const r=recFor(a);if(r)return r;const d=parseD(a.finAbonnement);
+  return{k:"srv",nom:nomDe(a),ab:String(a.numabo||""),dec:String(a.numdecabo||""),f:String(a.bouquet||""),adr:String(a.address||""),fin:d?iso(d):"",tel:normP(a.telephone||""),_srv:1}}
+/* ===== Recherche (Accueil) : résultats sur place ; le client choisi est enregistré puis ouvert dans « Enregistrement » ===== */
+const okTel=v=>/^\d{9}$/.test(normP(v||""));
+async function wsearch(){
+  const v=norm(wk,$("wq").value);
+  if(!v){say("wm","Saisissez une valeur à rechercher.","err");return}
+  const res=$("wres");res.innerHTML="";$("wgo").disabled=true;say("wm","Recherche en cours…");
+  const loc=findLocal(wk,v);let srv=[],st="ok";
+  try{const r=await srvFind(FIELDS[wk],v);
     if(r.status===401||r.status===403)st="auth";else if(r.status===429)st="busy";else srv=r.list}
   catch(e){st="net"}
   try{
     const out=[],seen={};let dirty=false;
-    /* serveur : un client déjà enregistré voit son forfait actualisé, son contact local est conservé */
     srv.forEach(s=>{const r=recFor(s);let a=s,key=kCur(s);
       if(r){syncRec(r,s);dirty=true;a=curOf(r);key=r.k}
       if(!seen[key]){seen[key]=1;out.push(a)}});
@@ -1230,32 +1206,26 @@ async function search(){
       busy:"Serveur : trop de requêtes. Résultats issus de vos enregistrements.",
       net:"Serveur injoignable. Résultats issus de vos enregistrements."}[st];
     if(!out.length){
-      if(st==="auth"){logout("Session expirée. Reconnectez-vous.");$("go").disabled=false;return}
-      say("msg",st==="busy"?"Trop de requêtes. Patientez un instant.":st==="net"?"La requête a été bloquée ou la plateforme ne répond pas, et aucun enregistrement ne correspond. Réessayez.":"Aucun abonné trouvé (serveur et enregistrements). Vérifiez la valeur saisie ou changez de critère.","err")}
-    else if(out.length===1)fiche(out[0],warn);
-    else{say("msg",out.length+" abonnés trouvés. Choisissez-en un."+(warn?" "+warn:""),"ok");pick(out)}
-  }catch(e){say("msg","Erreur d'affichage : "+(e&&e.message||e),"err")}
-  $("go").disabled=false;
-}
-$("go").onclick=search;$("q").onkeydown=e=>{if(e.key==="Enter")search()};
-
-function nomDe(a){return a.name&&a.name.trim()?a.name.replace(/^[.\s]+/,""):((a.nom||"")+" "+(a.prenom||"")).trim()}
-function srvRec(a){const r=recFor(a);if(r)return r;const d=parseD(a.finAbonnement);
-  return{k:"srv",nom:nomDe(a),ab:String(a.numabo||""),dec:String(a.numdecabo||""),f:String(a.bouquet||""),adr:String(a.address||""),fin:d?iso(d):"",tel:normP(a.telephone||""),_srv:1}}
-function pick(list){const box=$("list");box.innerHTML="";
-  list.forEach(a=>{const b=subCard(srvRec(a));b.onclick=()=>{box.innerHTML="";say("msg","");fiche(a)};box.appendChild(b)})}
-
-function fiche(a,note){
-  cur=a;const r=recFor(a);
-  rows("fiche",[["Nom",nomDe(a)],["Statut",a.status||"—","tag"],["N° abonné",a.numabo],["N° décodeur",a.numdecabo],["Adresse",a.address],["Téléphone",a.telephone?a.telephone+(r&&r.tmod?" (modifié)":""):""],["Email",a.email],["Formule actuelle",a.bouquet],["Début",a.debutAbonnement],["Fin",a.finAbonnement],["N° de contrat",a.numeroContrat],["Enregistré le",r?dtf(r.ts):""]]);
-  $("card").hidden=false;$("fa").hidden=false;$("fsv").textContent=r?"Ouvrir l'enregistrement":"Enregistrer";
-  showReact(a);logAct("Consultation fiche",a);say("msg",note||"");
-  $("card").scrollIntoView({behavior:"smooth",block:"nearest"});
-}
-$("fsv").onclick=()=>{if(!cur)return;const had=!!recFor(cur);
-  if(!had&&!ensureRec()){say("msg","Enregistrement impossible : n° d'abonné et de décodeur absents, ou stockage de l'appareil indisponible.","err");return}
-  go("reabo");if(!had)say("rm","Client enregistré sur cet appareil.","ok")};
-$("fct").onclick=()=>{if(!cur)return;go("reabo");openTel()};
+      if(st==="auth"){logout("Session expirée. Reconnectez-vous.");$("wgo").disabled=false;return}
+      say("wm",st==="busy"?"Trop de requêtes. Patientez un instant.":st==="net"?"La requête a été bloquée ou la plateforme ne répond pas, et aucun enregistrement ne correspond. Réessayez.":"Aucun abonné trouvé (serveur et enregistrements). Vérifiez la valeur saisie ou changez de critère.","err")}
+    else if(out.length===1){say("wm",warn||"");choose(out[0])}
+    else{say("wm",out.length+" abonnés trouvés. Touchez le bon abonné."+(warn?" "+warn:""),"ok");
+      out.forEach(a=>{const b=subCard(srvRec(a));b.onclick=()=>choose(a);res.appendChild(b)})}
+  }catch(e){say("wm","Erreur d'affichage : "+(e&&e.message||e),"err")}
+  $("wgo").disabled=false}
+/* Résultat choisi : déjà enregistré -> on l'ouvre ; sinon enregistrement automatique (contact obligatoire) */
+function choose(a){cur=a;$("wres").innerHTML="";say("wm","");
+  const r=recFor(a);if(r){logAct("Consultation fiche",r);go("reabo");return}
+  if(okTel(a.telephone))regGo(a,"");else askContact(a)}
+function regGo(a,tel){cur=a;
+  if(!ensureRec()){say("wm","Enregistrement impossible : n° d'abonné et de décodeur absents, ou stockage de l'appareil indisponible.","err");return}
+  const r=recFor(cur);if(r&&tel){r.tel=normP(tel);r.tmod=Date.now();r.mod=Date.now();putCli();cur=curOf(r)}
+  go("reabo");say("rm","Client enregistré sur cet appareil.","ok")}
+let ctA=null;
+function askContact(a){ctA=a;$("ctp").textContent="Le serveur n'a aucun numéro pour "+nomDe(a)+". Saisissez son téléphone : sans contact, le client ne peut être ni enregistré ni relancé.";$("cti").value="";say("ctm","");$("ctdlg").showModal();$("cti").focus()}
+$("ctno").onclick=()=>{$("ctdlg").close();ctA=null};
+$("ctok").onclick=()=>{const n=normP($("cti").value);if(!okTel(n)){say("ctm","Numéro invalide : 9 chiffres (ex. 671080340).","err");return}const a=ctA;$("ctdlg").close();ctA=null;regGo(a,n)};
+$("cti").onkeydown=e=>{if(e.key==="Enter")$("ctok").click()};
 
 /* Réactivation du décodeur (même fonction que le site officiel) */
 function rbody(a){
@@ -1372,6 +1342,7 @@ function showReabo(){
   $("rbody").hidden=!ok;$("tp").hidden=true;say("rm","");
   if(!ok){$("d1").innerHTML="";$("d2").innerHTML="";return}
   const fin=parseD(cur.finAbonnement),inact=String(cur.status||"").trim().toLowerCase()!=="actif",j=fin?Math.floor((Date.now()-fin)/J):0,promo=!!(inact&&fin&&j>90);
+  showReact(cur);
   rows("d1",[["Nom",nomDe(cur)],["N° abonné",cur.numabo],["N° décodeur",cur.numdecabo],["Téléphone",cur.telephone?cur.telephone+(r&&r.tmod?" (modifié)":""):""],["Email",cur.email],["Adresse",cur.address]]);
   rows("d2",[["Formule actuelle",cur.bouquet],["Début",cur.debutAbonnement],["Fin",cur.finAbonnement],["Statut",cur.status||"—","tag"],["N° de contrat",cur.numeroContrat]]);
   $("pr").className=promo?"promo":"msg";
@@ -2019,7 +1990,7 @@ window.addEventListener("online",()=>{if(token&&gOn())gSched()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token&&gOn()){const m=gMeta();if(!m.last||Date.now()-m.last>6e4)gSched()}});
 
 /* ===== PWA : installation et mises à jour (hébergement https uniquement) ===== */
-const APP_VERSION="4.0.0";
+const APP_VERSION="4.1.0";
 if(/netlify/i.test(location.hostname))document.documentElement.classList.add("nb");   /* le badge « Powered by Netlify » masque le bas de l'écran */
 let swReg=null,dip=null,updating=false;
 function showUpd(w){$("upd").hidden=false;$("updb").onclick=()=>{updating=true;w.postMessage("SKIP_WAITING")}}

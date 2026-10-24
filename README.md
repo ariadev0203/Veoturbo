@@ -1,7 +1,9 @@
-# CLARA 3.2 + Veo Pro
+# CLARA 4.1 + Veo Pro
 Racine du dépôt GitHub : netlify.toml, netlify/functions/veo.js, public/ (CLARA).
-Netlify : Import from Git, aucun réglage. Recherche, contacts et réactivation : app.visionscanal.com (inchangé).
-Veo Pro (onglet « Veo » et bouton « Réabonner (Veo) » sur la fiche) : réabonnement, facture, commissions, retrait.
-Le numéro qui paie est un champ séparé : le contact du client n'est jamais modifié.
-Facture entreprise : bouton « Facture entreprise » (opérations Veo) remplit le convertisseur de CLARA avec le modèle de votre entreprise.
-Relance fiable : Veo est la source de vérité pour la date de fin et le forfait (onglet Veo > Vérifier les dates avec Veo).
+Netlify : Import from Git, aucun réglage. Recherche, contacts, réactivation : app.visionscanal.com (inchangé).
+- Cartes abonnés / favoris : nom, jours restants, date de fin, jauge, boutons Relancer / Rappel / Fiche.
+- Fiche client : toutes les informations, modification (nom, téléphone, e-mail, localisation, notes), suppression.
+- Onglet Veo (même organisation que Veo Pro) : Accueil (chiffre d'affaires, réabonnement), Souscriptions, Commissions.
+- Paiement : numéro prérempli avec le contact du client, opérateur MTN / Orange détecté automatiquement.
+- Client réabonné absent de la base : enregistré automatiquement pour la relance et le suivi.
+- 4.1 : l'onglet Recherche est supprimé (remplacé par Veo). La recherche se fait sur l'Accueil : le client choisi est enregistré automatiquement (contact obligatoire) puis ouvert dans Enregistrement, où se trouvent la réactivation du décodeur, le réabonnement Veo et la relance.

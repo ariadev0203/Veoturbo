@@ -38,7 +38,7 @@
   (document.querySelector("main") || document.body).appendChild(sec);
   const nb = document.createElement("button"); nb.type = "button"; nb.title = "Veo Pro"; nb.dataset.to = "veo";
   nb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7l8 11 8-11"/></svg><span>Veo</span>'; nb.onclick = () => go("veo");
-  $q("nav").appendChild(nb);
+  $q("nav").insertBefore(nb, $q("nav").querySelector('[data-to="reabo"]'));
   { const cf = $q("cvf"); if (cf) cf.addEventListener("load", () => { cf.dataset.ok = "1"; }); }
   const g0 = window.go; window.go = function (p) { const r = g0.apply(this, arguments); if (p === "veo" && !sec.hidden) show(); return r; };
 
@@ -255,8 +255,7 @@
     const d = curDec(); if (!d) return; if (!vt) { alert("Connectez-vous d’abord dans l’onglet Veo."); return; }
     try { const r = await vsync(d); try { const rc = recFor({ numdecabo: String(d) }); if (rc) cur = curOf(rc); } catch (e) {} alert("Fin d’abonnement chez Veo : " + r.d.toLocaleDateString("fr-FR") + (r.changed ? "\nLa fiche a été corrigée." : "\nLa fiche était déjà exacte.") + (r.none ? "\n(Client non enregistré dans CLARA.)" : "")); } catch (e) { alert(e.message); }
   };
-  addBtn("fa", "vc1", "Vérifier (Veo)", chkFn); addBtn("fa", "vb1", "Réabonner (Veo)", () => open(curDec()));
-  { const rr = $q("rrl"); if (rr && rr.parentNode && !$q("vb2")) addBtn(rr.parentNode.id || "", "vb2", "Réabonner (Veo)", () => open(curDec()), "rrl"); if (rr && !$q("vb2")) { const x = document.createElement("button"); x.type = "button"; x.id = "vb2"; x.className = "btn alt"; x.textContent = "Réabonner (Veo)"; x.onclick = () => open(curDec()); rr.parentNode.insertBefore(x, rr); } }
+    { const rr = $q("rrl"); if (rr && rr.parentNode) { [["vb2", "Réabonner (Veo)", () => open(curDec())], ["vc2", "Vérifier (Veo)", chkFn]].forEach(([id, t, fn]) => { if ($q(id)) return; const x = document.createElement("button"); x.type = "button"; x.id = id; x.className = id === "vb2" ? "btn" : "btn alt"; x.textContent = t; x.onclick = fn; rr.parentNode.insertBefore(x, rr); }); } }
 
   /* ---------- première connexion : proposer l'identification Veo ---------- */
   const dg = document.createElement("dialog"); dg.id = "vinv";
