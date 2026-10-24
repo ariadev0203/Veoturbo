@@ -107,6 +107,10 @@ button.promo{display:block;width:100%;border:0;text-align:left;cursor:pointer;fo
 .sc .ft{display:flex;justify-content:space-between;gap:8px;font-size:14px;color:var(--mute);margin-top:6px}
 .sc .chips2{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.sc .chips2 span{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;background:var(--fill);color:var(--mute)}
 .sc .chips2 .imp{background:rgba(10,92,200,.1);color:#0a5cc8}.sc .chips2 .man{background:var(--orsoft);color:var(--or)}
+.sc>small:not(.sd),.sc .rm,.sc .ft,.sc .chips2{display:none!important}.sc .sd{margin-top:6px;font-size:14px}.sc{cursor:pointer}
+.sca{display:flex;gap:8px;margin-top:12px}.sca .btn{flex:1 1 0;min-width:0;white-space:nowrap;padding:10px 6px;font-size:14px;min-height:0;width:auto}
+.btn.sm{white-space:nowrap}.fgr{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin:6px 0 12px}.fgr small{display:block;color:var(--mute);font-size:12px}.fgr b{font-size:15px;overflow-wrap:anywhere;font-weight:600}
+.fed label{display:block;margin:10px 0 4px;font-size:13px;color:var(--mute)}.fq3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.fq3 .btn{white-space:nowrap;padding:10px 4px;font-size:14px;min-height:0;width:auto}.fhist{margin-top:14px;font-size:13px;color:var(--mute)}.fhist div{padding:4px 0;border-top:1px solid var(--line)}
 .fch{max-height:92vh;overflow:auto}
 .fch .fh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .fch .fh small{display:block;letter-spacing:.12em;font-weight:700;color:var(--mute);font-size:13px;margin-bottom:6px}
@@ -760,11 +764,13 @@ h1{font-size:clamp(24px,7.5vw,34px)}
 </nav>
 <div class="fvm" id="fiche2" hidden role="dialog" aria-modal="true" aria-labelledby="f2n"><div class="fch">
   <div class="fh"><div><small>FICHE CLIENT</small><h3 id="f2n"></h3></div><button class="x" id="f2x" type="button" aria-label="Fermer">✕</button></div>
-  <div class="fsum" id="f2s"></div>
-  <button class="far" id="f2c" type="button"><span class="ic bl">☎</span><span><b>Appeler</b><small>Ouvrir le téléphone</small></span></button>
-  <button class="far" id="f2w" type="button"><span class="ic gr">◉</span><span><b>WhatsApp</b><small>Préparer le message</small></span></button>
-  <button class="far" id="f2m" type="button"><span class="ic or">✉</span><span><b>Message (SMS)</b><small>Préparer le SMS</small></span></button>
-  <div class="fmk"><button class="btn alt" id="f2f" type="button"></button><button class="btn ghost" id="f2h" type="button"></button></div>
+  <div class="fgr" id="f2s"></div>
+  <div class="fed"><label for="f2in">Nom</label><input id="f2in" autocomplete="off"><label for="f2it">Téléphone de relance</label><input id="f2it" type="tel" inputmode="tel"><label for="f2im">E-mail</label><input id="f2im" type="email" inputmode="email"><label for="f2ia">Localisation</label><input id="f2ia"><label for="f2io">Notes</label><textarea id="f2io" rows="2"></textarea>
+  <button class="btn full" id="f2sv" type="button" style="margin-top:12px">Enregistrer les modifications</button><div class="msg" id="f2mm" role="status"></div></div>
+  <div class="fq3"><button class="btn alt sm" id="f2c" type="button">Appeler</button><button class="btn alt sm" id="f2w" type="button">WhatsApp</button><button class="btn alt sm" id="f2m" type="button">SMS</button></div>
+  <div class="fq3"><button class="btn sm" id="f2v" type="button">Réabonner</button><button class="btn alt sm" id="f2f" type="button"></button><button class="btn ghost sm" id="f2h" type="button"></button></div>
+  <button class="btn ghost full" id="f2d" type="button" style="margin-top:10px;color:#d94646">Supprimer ce client</button>
+  <div class="fhist" id="f2a"></div>
 </div></div>
 <div class="fvm" id="lsdel" hidden role="dialog" aria-modal="true" aria-labelledby="lsdt"><div>
   <h3 id="lsdt">Supprimer ce listing ?</h3>
@@ -1015,21 +1021,14 @@ function remTxt(r){const m=r.rem;if(!m||!m.ts)return["Aucun rappel programmé","
   const w=dtf(m.ts)+" · "+RCAN[m.canal||"wa"]+" · "+(m.auto?"automatique":"rappel");
   if(m.done)return["✔ Lancé le "+dtf(m.done)+" ("+RCAN[m.canal||"wa"]+")","none"];
   return m.ts<=Date.now()?["⏰ En retard : "+w,"late"]:["⏰ "+w,""]}
-function fvDueList(){const n=Date.now();return favs().filter(r=>r.rem&&r.rem.ts&&!r.rem.done&&r.rem.ts<=n).sort((a,b)=>a.rem.ts-b.rem.ts)}
+function fvDueList(){const n=Date.now();return Object.values(cli()).filter(r=>r&&r.rem&&r.rem.ts&&!r.rem.done&&r.rem.ts<=n).sort((a,b)=>a.rem.ts-b.rem.ts)}
 function fvRender(){const box=$("wfav"),L=favs(),D=fvDueList();box.innerHTML="";
   if(!L.length){box.className="msg";box.textContent="Aucun favori. Touchez « + Ajouter » ou l'étoile sur la fiche d'un abonné.";return}
   box.className="";
   if(D.length){const b=mk("button","promo",D.length+(D.length>1?" relances de favoris à faire":" relance de favori à faire")+" : touchez pour commencer");b.type="button";b.onclick=()=>fvPrompt(D[0]);box.appendChild(b)}
   const card=mk("div");box.appendChild(card);
   const big=9e15;L.sort((a,b)=>((a.rem&&!a.rem.done&&a.rem.ts)||big)-((b.rem&&!b.rem.done&&b.rem.ts)||big)||String(a.nom).localeCompare(String(b.nom)));
-  L.forEach(r=>{const c=subCard(r,true),rt=remTxt(r);c.classList.add("fv");c.style.cursor="pointer";
-    c.onclick=e=>{if(!e.target.closest("button"))openFiche(r)};
-    c.appendChild(mk("small","rm "+rt[1],rt[0]));
-    const bar=mk("div","fvb"),b1=mk("button","btn","Relancer"),b2=mk("button","btn alt",r.rem&&r.rem.ts?"Rappel":"+ Rappel"),b3=mk("button","btn alt","Retirer");
-    [b1,b2,b3].forEach(b=>b.type="button");
-    b1.onclick=()=>fvOpen(r);b2.onclick=()=>fvEdit(r);
-    b3.onclick=()=>{if(!confirm(T("Retirer ce favori ? Son rappel programmé sera supprimé.")))return;favSet(r,false);fvRender()};
-    bar.append(b1,b2,b3);c.appendChild(bar);card.appendChild(c)})}
+  L.forEach(r=>{const c=subCard(r);c.classList.add("fv");c.onclick=e=>{if(!e.target.closest("button"))openFiche(r)};card.appendChild(c)})}
 function fvOpen(r){if(blockPend())return;cur=curOf(r);go("relance")}
 /* Ajouter : choisir un abonné enregistré */
 function fvPickList(){const q=fold($("fvq").value.trim()),box=$("fvpl");box.innerHTML="";
@@ -1114,32 +1113,47 @@ function srcFix(){if(!window.lsGet||!uid)return;const C=cli();let any=false,set=
   if(any)putCli()}
 const srcOf=r=>r.src==="imp"?"imp":"man";
 function subCard(x,stat,tag){const d=parseD(x.fin),t=new Date();t.setHours(0,0,0,0);const n=d?Math.round((d-t)/J):null;
-  const c=mk(stat?"div":"button","sc"),top=mk("div","t"),nm=mk("b","",(x.fav?"★ ":"")+(x.nom||"—"));
-  let pc="na",pt="Sans échéance",bw=0,bc="var(--mute)",rt="—";
-  if(n!==null){if(n<0){pc="late";pt="Échu depuis "+(-n)+" j";bw=100;bc="#d94646";rt="Abonnement expiré"}
-    else{pc=n<=7?"warn":"ok";pt=n===0?"Échéance aujourd'hui":n+" jour(s) restant(s)";bw=Math.max(4,Math.min(100,Math.round(n/21*100)));bc=n<=7?"#f0922b":"#34a853";rt=n===0?"Aujourd'hui":n+" jour(s)"}}
-  const pill=mk("span","pill "+pc,pt);top.append(nm,pill);c.appendChild(top);
-  c.appendChild(mk("small","","Décodeur : "+(x.dec||"—")+(x.f?" · "+x.f:"")));
-  if(x.adr||d){const lc=mk("small");lc.style.cssText="display:flex;flex-wrap:wrap;gap:2px 14px";
-    if(x.adr)lc.appendChild(mk("span","","⌖ "+x.adr));
-    if(d){const ex=mk("span","","▣ Expire le "+d.toLocaleDateString(LOC(),{day:"2-digit",month:"long",year:"numeric"}));ex.style.whiteSpace="nowrap";lc.appendChild(ex)}
-    c.appendChild(lc)}
+  const c=mk("div","sc"),top=mk("div","t"),nm=mk("b","",(x.fav?"★ ":"")+(x.nom||"—"));
+  let pc="na",pt="Sans échéance",bw=0,bc="var(--mute)";
+  if(n!==null){if(n<0){pc="late";pt="Échu depuis "+(-n)+" j";bw=100;bc="#d94646"}
+    else{pc=n<=7?"warn":"ok";pt=n===0?"Aujourd'hui":n+(n>1?" jours":" jour");bw=Math.max(4,Math.min(100,Math.round(n/21*100)));bc=n<=7?"#f0922b":"#34a853"}}
+  top.append(nm,mk("span","pill "+pc,pt));c.appendChild(top);
+  c.appendChild(mk("small","sd",d?"Fin : "+d.toLocaleDateString(LOC(),{day:"numeric",month:"long",year:"numeric"}):"Date de fin inconnue"));
   const bar=mk("div","bar"),fi=mk("i");fi.style.width=bw+"%";fi.style.background=bc;bar.appendChild(fi);c.appendChild(bar);
-  c.appendChild(Object.assign(mk("div","ft"),{}));c.lastChild.append(mk("span","","Échéance"),mk("span","",rt));
-  const ch=mk("div","chips2");
-  if(x._srv)ch.append(mk("span","","Serveur · non enregistré"));
-  else{const sx=srcOf(x),st=rsOf(x);ch.append(mk("span",sx,tag||(sx==="imp"?"Listing":"Manuel")),mk("span","",SHORTS[st]||""));if(x.hid)ch.append(mk("span","","Masqué"))}
-  c.appendChild(ch);if(stat){c.style.cursor="default";c.style.marginBottom="8px"}else{c.type="button";c.dataset.k=x.k}return c}
+  const r=(!x._srv&&x.k&&cli()[x.k])||null;
+  if(r&&!stat){const a=mk("div","sca"),rm=r.rem&&r.rem.ts&&!r.rem.done?"⏰ "+new Date(r.rem.ts).toLocaleDateString(LOC(),{day:"2-digit",month:"2-digit"}):"Rappel",
+      b1=mk("button","btn","Relancer"),b2=mk("button","btn alt",rm),b3=mk("button","btn alt","Fiche");
+    [b1,b2,b3].forEach(b=>{b.type="button";b.addEventListener("click",e=>e.stopPropagation())});
+    b1.onclick=()=>fvOpen(r);b2.onclick=()=>{go("home");fvEdit(r)};b3.onclick=()=>openFiche(r);a.append(b1,b2,b3);c.appendChild(a)}
+  if(stat){c.style.cursor="default"}else{c.dataset.k=x.k;c.setAttribute("role","button");c.tabIndex=0;c.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target===c)c.click()})}return c}
 const SHORTS={reabo:"Réabonné",reussi:"Relance réussie",attente:"En attente",non:"Non relancé"};
 let fiR=null;
 function fiLong(r){const d=parseD(r.fin),t=new Date();t.setHours(0,0,0,0);if(!d)return"—";const n=Math.round((d-t)/J);
   return d.toLocaleDateString(LOC(),{day:"numeric",month:"long",year:"numeric"})+" · "+(n>=0?n+" jour"+(n>1?"s":"")+" restant"+(n>1?"s":""):"échu depuis "+(-n)+" jour"+(-n>1?"s":""))}
 function fiPhone(r){const ph=normP(r.tel||r.t0||"");if(!ph)return"—";const f=ph.length>9?ph:cfg.ind+ph;return"+"+f.slice(0,f.length-9)+" "+f.slice(-9).replace(/(\d{3})(?=\d)/g,"$1 ")}
 function openFiche(r){if(!r||blockPend())return;srcFix();fiR=r;
-  $("f2n").textContent=r.nom||"—";const b=$("f2s");b.innerHTML="";
-  b.appendChild(mk("b","",(r.nom||"—")+(r.f?" · "+r.f.toUpperCase():"")));
-  [["Décodeur : "+(r.dec||"—")],["Téléphone de relance : "+fiPhone(r)],r.adr?["Localisation : "+r.adr]:null,["Expiration : "+fiLong(r)],["Origine : "+(srcOf(r)==="imp"?"importé par le listing":"enregistré manuellement")]].forEach(l=>{if(l)b.appendChild(mk("div","",l[0]))});
-  fiBtns();$("fiche2").hidden=false;$("fiche2").querySelector(".fch").scrollTop=0}
+  $("f2n").textContent=r.nom||"—";const g=$("f2s");g.innerHTML="";const d=parseD(r.fin),t=new Date();t.setHours(0,0,0,0);const n=d?Math.round((d-t)/J):null;
+  [["N° abonné",r.ab],["Décodeur",r.dec],["Formule",r.f],["Début",r.deb?fmt(parseD(r.deb)):""],["Fin",d?fmt(d):""],["Jours restants",n===null?"":(n>=0?n+" j":"Échu depuis "+(-n)+" j")],
+   ["N° contrat",r.ctr],["Statut",n===null?r.st:(n>=0?"Actif":"Expiré")],["Tél. serveur",r.t0?fiPhone({tel:r.t0}):""],["Origine",srcOf(r)==="imp"?"Listing":"Manuel"],["Suivi",SHORTS[rsOf(r)]||""],["Rappel",r.rem&&r.rem.ts&&!r.rem.done?dtf(r.rem.ts):""]]
+   .forEach(([a,b])=>{const c=mk("div");c.append(mk("small","",a),mk("b","",b||"—"));g.appendChild(c)});
+  $("f2in").value=r.nom||"";$("f2it").value=r.tel||r.t0||"";$("f2im").value=r.mail||"";$("f2ia").value=r.adr||"";$("f2io").value=r.note||"";say("f2mm","");
+  const h=$("f2a");h.innerHTML="";const L=act().filter(x=>x.k===r.k).slice(0,6);if(L.length){h.appendChild(mk("b","","Historique"));L.forEach(x=>h.appendChild(mk("div","",dtf(x.ts)+" · "+x.label+(x.detail?" — "+x.detail:""))))}
+  $("f2v").hidden=!window.veoOpen;fiBtns();$("fiche2").hidden=false;$("fiche2").querySelector(".fch").scrollTop=0}
+$("f2sv").onclick=()=>{const r=fiR;if(!r)return;const nom=$("f2in").value.trim();if(!nom){say("f2mm","Le nom est obligatoire.","err");return}
+  const ch=[],lk=r.lk=r.lk||{},tel=normP($("f2it").value),mail=$("f2im").value.trim(),adr=$("f2ia").value.trim(),note=$("f2io").value.trim();
+  if(nom!==(r.nom||"")){r.nom=nom;lk.nom=1;ch.push("nom")}
+  if(tel!==(r.tel||"")){r.tel=tel;r.tmod=Date.now();ch.push("téléphone")}
+  if(mail!==(r.mail||"")){r.mail=mail;lk.mail=1;ch.push("e-mail")}
+  if(adr!==(r.adr||"")){r.adr=adr;lk.adr=1;ch.push("localisation")}
+  if(note!==(r.note||"")){r.note=note;ch.push("notes")}
+  if(!ch.length){say("f2mm","Aucun changement.");return}
+  r.mod=Date.now();if(!putCli()){say("f2mm","Enregistrement impossible (stockage bloqué).","err");return}
+  logAct("Fiche modifiée",r,{detail:ch.join(", ")});$("f2n").textContent=r.nom;say("f2mm","Modifications enregistrées.","ok");lstRefresh()};
+$("f2v").onclick=()=>{const r=fiR;if(!r||!window.veoOpen)return;fiClose();window.veoOpen(r.dec)};
+$("f2d").onclick=()=>{const r=fiR;if(!r)return;if(!confirm("Supprimer définitivement "+(r.nom||"ce client")+" ? Son historique de relance sera aussi effacé."))return;
+  const m=cli();delete m[r.k];if(!putCli()){m[r.k]=r;say("f2mm","Suppression impossible (stockage bloqué).","err");return}
+  try{localStorage.setItem(K("clara_act"),JSON.stringify(act().filter(x=>x.k!==r.k)));localStorage.setItem(K("clara_rel"),JSON.stringify(rel().filter(x=>x.k!==r.k)))}catch(e){}
+  gTomb(r.k);if(cur&&kCur(cur)===r.k)cur=null;fiClose();try{updBadge()}catch(e){}lstRefresh()};
 function fiBtns(){const r=fiR;if(!r)return;$("f2f").textContent=r.fav?"★ Marqué : retirer":"☆ Marquer";$("f2h").textContent=r.hid?"Réafficher":"Masquer"}
 function fiClose(){$("fiche2").hidden=true}
 function fiGo(kind){const r=fiR;if(!r)return;fiClose();cur=curOf(r);proSel="none";go("relance");
@@ -1317,7 +1331,7 @@ function curOf(r){const d=parseD(r.fin),b=parseD(r.deb),t=new Date();t.setHours(
 function applySrv(r,s){const n=recOf(s),t0=normP(s.telephone||""),ch=[];
   if(n.fin&&r.fin&&n.fin!==r.fin)ch.push("fin "+fmt(parseD(r.fin))+" → "+fmt(parseD(n.fin)));
   if(n.f&&r.f&&n.f!==r.f)ch.push(r.f+" → "+n.f);
-  ["nom","ab","dec","mail","adr","f","deb","fin","st","ctr"].forEach(f=>{if(n[f])r[f]=n[f]});
+  ["nom","ab","dec","mail","adr","f","deb","fin","st","ctr"].forEach(f=>{if(n[f]&&!(r.lk&&r.lk[f]))r[f]=n[f]});
   if(t0){r.t0=t0;if(!r.tmod)r.tel=t0}
   r.up=Date.now();return ch.join(" · ")}
 function syncRec(r,s){const ch=applySrv(r,s);if(ch){r.mod=Date.now();logAct("Forfait mis à jour",r,{detail:ch})}return ch}
@@ -2005,7 +2019,7 @@ window.addEventListener("online",()=>{if(token&&gOn())gSched()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token&&gOn()){const m=gMeta();if(!m.last||Date.now()-m.last>6e4)gSched()}});
 
 /* ===== PWA : installation et mises à jour (hébergement https uniquement) ===== */
-const APP_VERSION="3.3.0";
+const APP_VERSION="4.0.0";
 if(/netlify/i.test(location.hostname))document.documentElement.classList.add("nb");   /* le badge « Powered by Netlify » masque le bas de l'écran */
 let swReg=null,dip=null,updating=false;
 function showUpd(w){$("upd").hidden=false;$("updb").onclick=()=>{updating=true;w.postMessage("SKIP_WAITING")}}
