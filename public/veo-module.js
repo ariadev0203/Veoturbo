@@ -58,8 +58,8 @@
   function vHome() {
     $q("vbody").innerHTML = `<div class="vca"><small>Chiffre d’affaires</small><small id="vcp"></small><select id="vcs" aria-label="Période"><option value="m">Ce mois</option><option value="d">Aujourd’hui</option><option value="w">30 derniers jours</option></select><b id="vcv">…</b><small id="vcn"></small></div>
     <div class="vbox"><h2 style="margin:0 0 6px">Effectuer un réabonnement</h2><div class="msg" style="margin:0 0 8px">Numéro de décodeur, nom ou téléphone d’un client enregistré.</div><input id="vd" inputmode="search" value="${E(PEND)}" placeholder="Rechercher un décodeur ou un client"><div class="acts"><button class="btn" id="vg" type="button">Rechercher</button></div><div id="vlist"></div><div id="vr"></div></div>
-    <div class="vbox"><h2 style="margin:0 0 6px">Relance fiable</h2><div class="msg" style="margin:0 0 8px">Reprend chez Veo la date de fin et le forfait des clients à relancer.</div><div class="acts"><button class="btn alt" id="vv" type="button">Vérifier les dates avec Veo</button></div><div class="msg" id="va" role="status"></div></div>`;
-    $q("vcs").onchange = ca; $q("vg").onclick = search; $q("vd").onkeydown = e => { if (e.key === "Enter") search(); }; $q("vv").onclick = vall; ca();
+    <div class="vbox"><h2 style="margin:0 0 6px">Relance fiable</h2><div class="msg" style="margin:0 0 8px">Reprend chez Veo la date de fin et le forfait des clients à relancer.</div><div class="acts"><button class="btn alt" id="vv" type="button">Vérifier les dates avec Veo</button></div><div class="msg" id="va" role="status"></div><div class="acts"><button class="btn alt" id="vdp" type="button">Contrôler les contacts en double</button></div></div>`;
+    $q("vcs").onchange = ca; $q("vg").onclick = search; $q("vd").onkeydown = e => { if (e.key === "Enter") search(); }; $q("vv").onclick = vall; $q("vdp").onclick = dupTel; ca();
     if (PEND) { const d = PEND; PEND = ""; prep(d); }
   }
   async function ca() {
@@ -95,25 +95,28 @@
       const j = await api("/cga-subs/init/v2", "POST", { decoder_number: d }), sb = j.subscriber || {}, P = sb.packs?.packs || {}, O = sb.packs?.options || {};
       const types = ["RENEWAL", "UPGRADE"].filter(t => (P[t] || []).length);
       if (!types.length) throw new Error("Aucune offre disponible chez Veo pour ce décodeur.");
-      const rec = typeof recFor === "function" ? recFor({ numdecabo: String(d) }) : null, contact = n9((rec && (rec.tel || rec.t0)) || ls("veo_payer"));
+      const rec = typeof recFor === "function" ? recFor({ numdecabo: String(d) }) : null, contact = n9(rec && (rec.tel || rec.t0));
       RN = { id: j.identifier, d, P, O, types, type: types[0], sel: new Set(), sb, sub: fnd(sb, "subscriber_number")[0] || fnd(sb, "numabo")[0] || "", name: ((sb.customer?.first_name || "") + " " + (sb.customer?.last_name || "")).trim(), op: "", hadRec: !!rec };
       box.innerHTML = `<div class="vrow" style="margin-top:12px"><div class="a"><b>${E(RN.name || "Client")}</b><span>${E(sb.option || "")}</span></div><small>Décodeur ${E(d)} • fin ${E(sb.subscription_date?.end || "—")} • ${E(sb.contract?.active?.label || "")}${rec ? "" : " • nouveau client : il sera enregistré après le paiement"}</small>${sb.contract?.promo?.length ? "<small><b>Promotion :</b> " + E(JSON.stringify(sb.contract.promo)) + "</small>" : ""}</div>
       <label>Type de souscription</label><div class="vseg" id="vty" role="group" aria-label="Type de souscription">${types.map(t => `<button type="button" data-t="${t}" aria-pressed="${t === RN.type}">${TL[t]}</button>`).join("")}</div>
       <label for="vpk">Offre</label><select id="vpk"></select>
       <label for="vdu">Durée</label><select id="vdu">${[1, 2, 3, 6, 12].map(n => `<option value="${n}">${n} mois</option>`).join("")}</select>
       <label>Options</label><div class="vseg" id="vop" role="group" aria-label="Options"></div>
+      ${rec ? "" : `<label for="vct">Téléphone du client (contact de relance, obligatoire)</label><input id="vct" type="tel" inputmode="tel" placeholder="6XXXXXXXX">`}
       <label for="vnp">Numéro de paiement${contact ? " (contact du client)" : ""}</label><input id="vnp" type="tel" inputmode="tel" value="${E(contact)}" placeholder="6XXXXXXXX">
       <div class="vseg" id="vmt" role="group" aria-label="Moyen de paiement">${Object.keys(OPN).map(k => `<button type="button" data-m="${k}" aria-pressed="false">${OPN[k]}</button>`).join("")}</div><div class="msg" id="vdt"></div>
       <div class="acts"><button class="btn vpay" id="vpay" type="button">Payer</button></div><div class="msg" id="vst" role="status"></div>`;
       $q("vty").querySelectorAll("button").forEach(b => b.onclick = () => setType(b.dataset.t));
       $q("vmt").querySelectorAll("button").forEach(b => b.onclick = () => { RN.op = b.dataset.m; ops(); });
-      $q("vnp").oninput = detect; $q("vpk").onchange = () => { RN.sel.clear(); opts(); }; $q("vdu").onchange = tot; $q("vpay").onclick = pay;
+      RN.edited = false; $q("vnp").oninput = () => { RN.edited = true; detect(); };
+      if ($q("vct")) $q("vct").oninput = () => { if (!RN.edited) { $q("vnp").value = n9($q("vct").value); detect(); } }; $q("vpk").onchange = () => { RN.sel.clear(); opts(); }; $q("vdu").onchange = tot; $q("vpay").onclick = pay;
       setType(RN.type); detect(); box.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (e) { box.innerHTML = `<div class="msg err">${E(e.message)}</div>`; }
   }
   function detect() {
     const n = n9($q("vnp").value), o = opDet(n);
-    if (o) { RN.op = o; $q("vdt").textContent = OPN[o] + " détecté automatiquement."; } else { $q("vdt").textContent = n.length >= 3 ? "Opérateur non reconnu : choisissez le moyen de paiement." : "Saisissez le numéro de paiement : l’opérateur est détecté automatiquement."; }
+    RN.op = o;
+    if (o) { $q("vdt").textContent = OPN[o] + " détecté automatiquement."; } else { $q("vdt").textContent = n.length >= 3 ? "Opérateur non reconnu : choisissez le moyen de paiement." : "Saisissez le numéro de paiement : l’opérateur est détecté automatiquement."; }
     ops();
   }
   const ops = () => $q("vmt").querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === RN.op)));
@@ -132,10 +135,12 @@
   function tot() { $q("vpay").textContent = "Payer · " + money(total()) + " (estimé)"; }
   async function pay() {
     const p = curPack(), n = +$q("vdu").value, s = $q("vst"), type = RN.type, num = n9($q("vnp").value), m = RN.op, op = curOpts().filter(x => RN.sel.has(x.identifier)).map(x => x.identifier);
+    const ct = RN.hadRec ? "" : n9($q("vct") ? $q("vct").value : "");
+    if (!RN.hadRec && ct.length !== 9) { s.textContent = "Le téléphone du client est obligatoire (9 chiffres) pour l’enregistrer et le relancer."; return; }
     if (num.length !== 9) { s.textContent = "Numéro de paiement invalide (9 chiffres)."; return; }
     if (!m) { s.textContent = "Choisissez le moyen de paiement."; return; }
     if (!confirm("Confirmer le paiement ?\n" + TL[type] + " : " + p.label + " × " + n + " mois" + (op.length ? " + " + op.length + " option(s)" : "") + "\nDécodeur " + RN.d + "\n" + OPN[m] + " " + num)) return;
-    $q("vpay").disabled = true; ls("veo_payer", num);
+    $q("vpay").disabled = true;
     try {
       const r = await api("/cga-subs/confirm/v2", "POST", { identifier: RN.id, duration: n, pack_identifier: p.identifier, pack_options: op, payment_account_number: num, payment_method: m, subscription_type: type, source: "MOBILE_APP", phone: num });
       s.textContent = "Demande envoyée (" + money(r.amount) + "). Validez le paiement sur votre téléphone…";
@@ -145,18 +150,18 @@
         s.textContent = "Statut : " + st;
         if (x && st !== "PENDING") {
           ITEMS[r.id] = x; CAC = {}; s.innerHTML = "Statut : <b>" + E(st) + `</b><div class="sca"><button class="btn alt sm" type="button" id="vfa">Facture Veo</button><button class="btn sm" type="button" id="vfe">Facture entreprise</button></div>`; $q("vfa").onclick = () => inv(r.id); $q("vfe").onclick = () => facEnt(r.id);
-          if (st === "SUCCESSFUL") { enreg(TL[type] + " : " + p.label + " × " + n + " mois", num); vsync(RN.d).catch(() => {}); } return;
+          if (st === "SUCCESSFUL") { enreg(TL[type] + " : " + p.label + " × " + n + " mois", ct); vsync(RN.d).catch(() => {}); } return;
         }
       }
       s.textContent += " — toujours en attente : ne relancez pas le paiement, vérifiez dans Souscriptions.";
     } catch (e) { s.textContent = e.message + " (vérifiez dans Souscriptions avant de réessayer)"; }
   }
   /* Après un réabonnement réussi : le client est enregistré s'il ne l'est pas encore (relance et suivi possibles) */
-  function enreg(detail, payer) {
+  function enreg(detail, contact) {
     try {
       let r = recFor({ numabo: RN.sub, numdecabo: RN.d });
       if (!r) {
-        const k = String(RN.sub || RN.d), now = Date.now(), own = vc ? n9(vc.u) : "", tel = payer && payer !== own ? payer : "";
+        const k = String(RN.sub || RN.d), now = Date.now(), tel = contact || "";
         r = { k, tel, t0: "", tmod: tel ? now : 0, ts: now, mod: now, up: now, src: "man", nom: RN.name || "Client Veo", ab: String(RN.sub || ""), dec: String(RN.d), mail: "", adr: "", f: String(RN.sb.option || ""), deb: "", fin: "", st: "actif", ctr: "" };
         cli()[k] = r; if (!putCli()) { delete cli()[k]; return; } logAct("Client enregistré (réabonnement Veo)", r);
       }
@@ -221,6 +226,20 @@
     }
     o.textContent = ok + " vérifié(s) chez Veo, " + ch + " date(s) corrigée(s), " + ko + " introuvable(s) (non gérés par votre compte Veo).";
     try { lstRefresh(); } catch (e) {}
+  }
+
+  /* ---------- contacts : un même numéro sur plusieurs fiches est presque toujours une erreur ---------- */
+  function dupTel() {
+    const o = $q("va"), g = {}; Object.values(cli()).forEach(r => { const n = n9(r.tel); if (n.length === 9) (g[n] = g[n] || []).push(r); });
+    const L = Object.entries(g).filter(([, a]) => a.length >= 3).sort((a, b) => b[1].length - a[1].length);
+    if (!L.length) { o.textContent = "Aucun numéro n’est partagé par 3 clients ou plus."; return; }
+    let fixed = 0;
+    for (const [n, a] of L) {
+      if (!confirm("Le numéro " + n + " est enregistré sur " + a.length + " fiches (" + a.slice(0, 4).map(r => r.nom).join(", ") + (a.length > 4 ? "…" : "") + ").\nLe retirer de ces fiches ?\n(Le numéro fourni par le serveur est rétabli quand il existe.)")) continue;
+      a.forEach(r => { const t0 = n9(r.t0); r.tel = t0 && t0 !== n ? r.t0 : ""; r.tmod = 0; r.mod = Date.now(); fixed++; });
+    }
+    if (fixed) { putCli(); try { lstRefresh(); } catch (e) {} }
+    o.textContent = fixed + " fiche(s) corrigée(s). Les clients sans contact sont à compléter dans leur fiche.";
   }
 
   /* ---------- factures ---------- */

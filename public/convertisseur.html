@@ -113,9 +113,9 @@ function fitAll(){document.querySelectorAll('#inv .fit').forEach(el=>{
 const DEF={nom:'Solution Services',slogan:'Une solution pour tous vos services',tel:'+237 681 778 010',wa:'+237 697 708 190',adr:'Kribi, Mpangou face Église EPC',contact:'Souvop Meppe Rostant de l’entreprise AC SAT',contactTel:'697708190',merci:'Merci pour votre confiance !',P:'#0b3b8c',A:'#f28c1e',design:'original',footer:false,logo:''};
 let S={...DEF};
 try{Object.assign(S,JSON.parse(localStorage.getItem('ss_set')||'{}'))}catch(e){}
-const saveS=()=>{try{localStorage.setItem('ss_set',JSON.stringify(S))}catch(e){}};
+const saveS=()=>{try{localStorage.setItem('ss_set',JSON.stringify(S))}catch(e){}};if(!String(S.merci||'').trim()||/\d{6,}/.test(S.merci)){S.merci=DEF.merci;saveS()}
 const SF=[['nom','Nom de l’entreprise'],['slogan','Slogan'],['tel','Téléphone'],['wa','WhatsApp'],['adr','Adresse'],['contact','Contact pour le réabonnement (nom)'],['contactTel','Numéro de réabonnement'],['merci','Message de remerciement'],['P','Couleur principale (modèle personnalisé)','color'],['A','Couleur d’accent (modèle personnalisé)','color']];
-$('sform').innerHTML=SF.map(([k,l,t])=>`<div><label>${l}</label><input id="s_${k}" type="${t||'text'}" autocomplete="off"></div>`).join('');
+$('sform').innerHTML=SF.map(([k,l,t])=>`<div><label>${l}</label><input id="s_${k}" type="${t||'text'}" autocomplete="off" name="x_${k}" data-lpignore="true"></div>`).join('');
 function syncS(){SF.forEach(([k])=>$('s_'+k).value=S[k]);$('s_design').value=S.design;$('s_footer').value=S.footer?'1':'0';$('s_prev').src=S.logo||DEFLOGO}
 SF.forEach(([k])=>$('s_'+k).addEventListener('input',e=>{S[k]=e.target.value;saveS();render()}));
 $('s_design').onchange=e=>{S.design=e.target.value;saveS();render()};

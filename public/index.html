@@ -961,7 +961,9 @@ function logAct(label,a,x){try{const k=kCur(a),l=act();
   l.unshift({ts:Date.now(),k,nom:nomDe(a),label,...(x||{})});localStorage.setItem(K("clara_act"),JSON.stringify(l.slice(0,3000)))}catch(e){}}
 function openK(k){const r=cli()[k];if(!r)return;cur=curOf(r);go("reabo")}
 function showHome(){
-  const now=new Date(),h=now.getHours(),n=uname()||uid||"";
+  const now=new Date(),h=now.getHours();let n=uname();
+  try{if(n)localStorage.setItem("clara_name_last",n);else{const b=localStorage.getItem("clara_name_last");if(b){localStorage.setItem(K("clara_name"),b);n=b}}}catch(e){}
+  n=n||uid||"";
   $("wl").textContent=(h<18?"Bonjour":"Bonsoir")+(n?", "+n:"");
   const d=now.toLocaleDateString(LOC(),{weekday:"long",day:"numeric",month:"long",year:"numeric"});
   $("wd").textContent=d.charAt(0).toUpperCase()+d.slice(1);
@@ -1990,7 +1992,7 @@ window.addEventListener("online",()=>{if(token&&gOn())gSched()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token&&gOn()){const m=gMeta();if(!m.last||Date.now()-m.last>6e4)gSched()}});
 
 /* ===== PWA : installation et mises à jour (hébergement https uniquement) ===== */
-const APP_VERSION="4.1.0";
+const APP_VERSION="4.2.0";
 if(/netlify/i.test(location.hostname))document.documentElement.classList.add("nb");   /* le badge « Powered by Netlify » masque le bas de l'écran */
 let swReg=null,dip=null,updating=false;
 function showUpd(w){$("upd").hidden=false;$("updb").onclick=()=>{updating=true;w.postMessage("SKIP_WAITING")}}
