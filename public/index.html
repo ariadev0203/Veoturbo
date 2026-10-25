@@ -672,6 +672,7 @@ h1{font-size:clamp(24px,7.5vw,34px)}
     <select id="sfk"><option value="fin">Échéance</option><option value="ts">Date d'enregistrement</option><option value="rel">Date de relance</option></select>
     <div class="sfl"><div><label for="sfd">Du</label><input id="sfd" type="date"></div><div><label for="sft">Au</label><input id="sft" type="date"></div></div>
     <button class="btn alt full" id="sfr" type="button">Réinitialiser</button>
+    <button class="btn full" id="sref" type="button" style="margin-top:8px">Actualiser les dates (Veo et serveur)</button><div class="msg" id="srefm" role="status"></div>
     <div class="msg" id="ssum" role="status"></div>
     <div id="sl"></div>
     <button class="btn alt full" id="snt" type="button"></button>
@@ -1116,13 +1117,13 @@ function openFiche(r){if(!r||blockPend())return;srcFix();fiR=r;
   [["N° abonné",r.ab],["Décodeur",r.dec],["Formule",r.f],["Début",r.deb?fmt(parseD(r.deb)):""],["Fin",d?fmt(d):""],["Jours restants",n===null?"":(n>=0?n+" j":"Échu depuis "+(-n)+" j")],
    ["N° contrat",r.ctr],["Statut",n===null?r.st:(n>=0?"Actif":"Expiré")],["Tél. serveur",r.t0?fiPhone({tel:r.t0}):""],["Origine",srcOf(r)==="imp"?"Listing":"Manuel"],["Suivi",SHORTS[rsOf(r)]||""],["Rappel",r.rem&&r.rem.ts&&!r.rem.done?dtf(r.rem.ts):""]]
    .forEach(([a,b])=>{const c=mk("div");c.append(mk("small","",a),mk("b","",b||"—"));g.appendChild(c)});
-  $("f2in").value=r.nom||"";$("f2it").value=r.tel||r.t0||"";$("f2im").value=r.mail||"";$("f2ia").value=r.adr||"";$("f2io").value=r.note||"";say("f2mm","");
+  $("f2in").value=r.nom||"";$("f2it").value=r.tel||r.t0||"";$("f2im").value=r.mail||"";$("f2ia").value=r.adr||"";$("f2io").value=r.note||"";say("f2mm",r.noc&&!r.tel?"Contact manquant : saisissez le téléphone du client pour pouvoir le relancer.":"","err");
   const h=$("f2a");h.innerHTML="";const L=act().filter(x=>x.k===r.k).slice(0,6);if(L.length){h.appendChild(mk("b","","Historique"));L.forEach(x=>h.appendChild(mk("div","",dtf(x.ts)+" · "+x.label+(x.detail?" — "+x.detail:""))))}
   $("f2v").hidden=!window.veoOpen;fiBtns();$("fiche2").hidden=false;$("fiche2").querySelector(".fch").scrollTop=0}
 $("f2sv").onclick=()=>{const r=fiR;if(!r)return;const nom=$("f2in").value.trim();if(!nom){say("f2mm","Le nom est obligatoire.","err");return}
   const ch=[],lk=r.lk=r.lk||{},tel=normP($("f2it").value),mail=$("f2im").value.trim(),adr=$("f2ia").value.trim(),note=$("f2io").value.trim();
   if(nom!==(r.nom||"")){r.nom=nom;lk.nom=1;ch.push("nom")}
-  if(tel!==(r.tel||"")){r.tel=tel;r.tmod=Date.now();ch.push("téléphone")}
+  if(tel!==(r.tel||"")){r.tel=tel;r.tmod=Date.now();ch.push("téléphone");if(tel)delete r.noc}
   if(mail!==(r.mail||"")){r.mail=mail;lk.mail=1;ch.push("e-mail")}
   if(adr!==(r.adr||"")){r.adr=adr;lk.adr=1;ch.push("localisation")}
   if(note!==(r.note||"")){r.note=note;ch.push("notes")}
@@ -1992,7 +1993,7 @@ window.addEventListener("online",()=>{if(token&&gOn())gSched()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token&&gOn()){const m=gMeta();if(!m.last||Date.now()-m.last>6e4)gSched()}});
 
 /* ===== PWA : installation et mises à jour (hébergement https uniquement) ===== */
-const APP_VERSION="4.2.0";
+const APP_VERSION="4.3.0";
 if(/netlify/i.test(location.hostname))document.documentElement.classList.add("nb");   /* le badge « Powered by Netlify » masque le bas de l'écran */
 let swReg=null,dip=null,updating=false;
 function showUpd(w){$("upd").hidden=false;$("updb").onclick=()=>{updating=true;w.postMessage("SKIP_WAITING")}}

@@ -40,12 +40,12 @@
   nb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7l8 11 8-11"/></svg><span>Veo</span>'; nb.onclick = () => go("veo");
   $q("nav").insertBefore(nb, $q("nav").querySelector('[data-to="reabo"]'));
   { const cf = $q("cvf"); if (cf) cf.addEventListener("load", () => { cf.dataset.ok = "1"; }); }
-  const g0 = window.go; window.go = function (p) { const r = g0.apply(this, arguments); if (p === "veo" && !sec.hidden) show(); return r; };
+  const g0 = window.go; window.go = function (p) { const r = g0.apply(this, arguments); if (p === "veo" && !sec.hidden) show(); if (vt && (p === "suivi" || p === "relance" || p === "home")) autoThrottle(); return r; };
 
   function show() {
     if (!vt) {
       sec.innerHTML = `<h1>Veo Pro</h1><div class="vbox"><div class="msg" style="margin:0 0 10px">Identifiez-vous avec votre compte revendeur Veo Pro pour réabonner vos clients, obtenir les factures et suivre vos commissions.</div><label for="vu">Numéro de téléphone Veo Pro</label><input id="vu" type="tel" inputmode="tel" autocomplete="username" value="${E(ls("veo_user"))}"><label for="vp">Mot de passe</label><input id="vp" type="password" autocomplete="current-password"><div class="acts"><button class="btn" id="vl" type="button">Connexion</button></div><div class="msg" id="vm" role="status"></div></div>`;
-      $q("vl").onclick = async () => { const m = $q("vm"); try { m.textContent = "Connexion…"; await login($q("vu").value.trim(), $q("vp").value); ls("veo_user", $q("vu").value.trim()); show(); } catch (e) { m.textContent = e.message; } };
+      $q("vl").onclick = async () => { const m = $q("vm"); try { m.textContent = "Connexion…"; await login($q("vu").value.trim(), $q("vp").value); ls("veo_user", $q("vu").value.trim()); show(); autoThrottle(); } catch (e) { m.textContent = e.message; } };
       return;
     }
     sec.innerHTML = `<h1>Veo Pro</h1><div class="vseg" id="vtabs" role="group" aria-label="Rubriques Veo">${[["h", "Accueil"], ["s", "Souscriptions"], ["c", "Commissions"]].map(([k, t]) => `<button type="button" data-t="${k}" aria-pressed="${VTAB === k}">${t}</button>`).join("")}</div><div id="vbody"></div><div class="acts"><button class="btn ghost sm" id="vx" type="button">Déconnexion Veo</button></div>`;
@@ -59,7 +59,7 @@
     $q("vbody").innerHTML = `<div class="vca"><small>Chiffre d’affaires</small><small id="vcp"></small><select id="vcs" aria-label="Période"><option value="m">Ce mois</option><option value="d">Aujourd’hui</option><option value="w">30 derniers jours</option></select><b id="vcv">…</b><small id="vcn"></small></div>
     <div class="vbox"><h2 style="margin:0 0 6px">Effectuer un réabonnement</h2><div class="msg" style="margin:0 0 8px">Numéro de décodeur, nom ou téléphone d’un client enregistré.</div><input id="vd" inputmode="search" value="${E(PEND)}" placeholder="Rechercher un décodeur ou un client"><div class="acts"><button class="btn" id="vg" type="button">Rechercher</button></div><div id="vlist"></div><div id="vr"></div></div>
     <div class="vbox"><h2 style="margin:0 0 6px">Relance fiable</h2><div class="msg" style="margin:0 0 8px">Reprend chez Veo la date de fin et le forfait des clients à relancer.</div><div class="acts"><button class="btn alt" id="vv" type="button">Vérifier les dates avec Veo</button></div><div class="msg" id="va" role="status"></div><div class="acts"><button class="btn alt" id="vdp" type="button">Contrôler les contacts en double</button></div></div>`;
-    $q("vcs").onchange = ca; $q("vg").onclick = search; $q("vd").onkeydown = e => { if (e.key === "Enter") search(); }; $q("vv").onclick = vall; $q("vdp").onclick = dupTel; ca();
+    $q("vcs").onchange = ca; $q("vg").onclick = search; $q("vd").onkeydown = e => { if (e.key === "Enter") search(); }; $q("vv").onclick = () => vall($q("va")); $q("vdp").onclick = dupTel; ca();
     if (PEND) { const d = PEND; PEND = ""; prep(d); }
   }
   async function ca() {
@@ -96,7 +96,7 @@
       const types = ["RENEWAL", "UPGRADE"].filter(t => (P[t] || []).length);
       if (!types.length) throw new Error("Aucune offre disponible chez Veo pour ce décodeur.");
       const rec = typeof recFor === "function" ? recFor({ numdecabo: String(d) }) : null, contact = n9(rec && (rec.tel || rec.t0));
-      RN = { id: j.identifier, d, P, O, types, type: types[0], sel: new Set(), sb, sub: fnd(sb, "subscriber_number")[0] || fnd(sb, "numabo")[0] || "", name: ((sb.customer?.first_name || "") + " " + (sb.customer?.last_name || "")).trim(), op: "", hadRec: !!rec };
+      RN = { id: j.identifier, d, P, O, types, type: types[0], sel: new Set(), sb, sub: fnd(sb, "subscriber_number")[0] || fnd(sb, "numabo")[0] || "", name: ((sb.customer?.first_name || "") + " " + (sb.customer?.last_name || "")).trim(), op: "", hadRec: !!rec, prevEnd: pdate(sb.subscription_date?.end) };
       box.innerHTML = `<div class="vrow" style="margin-top:12px"><div class="a"><b>${E(RN.name || "Client")}</b><span>${E(sb.option || "")}</span></div><small>Décodeur ${E(d)} • fin ${E(sb.subscription_date?.end || "—")} • ${E(sb.contract?.active?.label || "")}${rec ? "" : " • nouveau client : il sera enregistré après le paiement"}</small>${sb.contract?.promo?.length ? "<small><b>Promotion :</b> " + E(JSON.stringify(sb.contract.promo)) + "</small>" : ""}</div>
       <label>Type de souscription</label><div class="vseg" id="vty" role="group" aria-label="Type de souscription">${types.map(t => `<button type="button" data-t="${t}" aria-pressed="${t === RN.type}">${TL[t]}</button>`).join("")}</div>
       <label for="vpk">Offre</label><select id="vpk"></select>
@@ -150,7 +150,7 @@
         s.textContent = "Statut : " + st;
         if (x && st !== "PENDING") {
           ITEMS[r.id] = x; CAC = {}; s.innerHTML = "Statut : <b>" + E(st) + `</b><div class="sca"><button class="btn alt sm" type="button" id="vfa">Facture Veo</button><button class="btn sm" type="button" id="vfe">Facture entreprise</button></div>`; $q("vfa").onclick = () => inv(r.id); $q("vfe").onclick = () => facEnt(r.id);
-          if (st === "SUCCESSFUL") { enreg(TL[type] + " : " + p.label + " × " + n + " mois", ct); vsync(RN.d).catch(() => {}); } return;
+          if (st === "SUCCESSFUL") { markApplied(r.id); enreg(TL[type] + " : " + p.label + " × " + n + " mois", ct); s.insertAdjacentHTML("beforeend", '<div class="msg" id="vup">Mise à jour de la fiche client…</div>'); afterPay(RN.d, RN.prevEnd, n, $q("vup")); } return;
         }
       }
       s.textContent += " — toujours en attente : ne relancez pas le paiement, vérifiez dans Souscriptions.";
@@ -204,27 +204,73 @@
   }
 
   /* ---------- Veo = source de vérité pour l'échéance ---------- */
+  const sleep = ms => new Promise(z => setTimeout(z, ms));
+  const applied = () => { try { return new Set(JSON.parse(ls("veo_applied") || "[]")); } catch (e) { return new Set(); } };
+  const markApplied = id => { const a = applied(); a.add(id); ls("veo_applied", JSON.stringify([...a].slice(-300))); };
   async function vsync(dec) {
     const j = await api("/cga-subs/init/v2", "POST", { decoder_number: dec }), sb = j.subscriber || {}, d = pdate(sb.subscription_date?.end);
     if (!d) throw new Error("Date de fin introuvable chez Veo");
     const r = recFor({ numdecabo: String(dec) }), n = iso(d); if (!r) return { d, changed: false, none: true };
+    if (r.est && parseD(r.fin) && d.getTime() < parseD(r.fin).getTime()) return { d, changed: false, pending: true };
     const old = r.fin, ch = old !== n || (sb.option && r.f !== String(sb.option));
-    r.fin = n; if (sb.option) r.f = String(sb.option); r.vok = Date.now();
+    r.fin = n; r.est = 0; if (sb.option) r.f = String(sb.option); r.vok = Date.now();
     if (ch) { r.mod = Date.now(); try { logAct("Fin d’abonnement vérifiée (Veo)", r, { detail: (old || "?") + " → " + n }); } catch (e) {} }
     putCli(); return { d, changed: ch };
   }
-  async function vall() {
-    const o = $q("va"), t0 = new Date(); t0.setHours(0, 0, 0, 0);
-    const lim = t0.getTime() + (jr() + 4) * 864e5, old = t0.getTime() - 120 * 864e5;
-    const list = Object.values(cli()).filter(r => r.dec && (!r.fin || (parseD(r.fin) && parseD(r.fin).getTime() <= lim && parseD(r.fin).getTime() >= old))).slice(0, 80);
-    if (!list.length) { o.textContent = "Aucun client à vérifier."; return; }
-    let ok = 0, ch = 0, ko = 0;
-    for (let i = 0; i < list.length; i++) {
-      o.textContent = "Vérification " + (i + 1) + " / " + list.length + "…";
-      try { const r = await vsync(list[i].dec); ok++; if (r.changed) ch++; } catch (e) { ko++; if (/expirée|Identifiants/.test(e.message)) { o.textContent = e.message; return; } }
-      await new Promise(z => setTimeout(z, 350));
+  /* Après un réabonnement : la fiche est mise à jour dès que Veo a pris en compte la nouvelle échéance */
+  async function afterPay(dec, prev, months, el) {
+    const say2 = t => { if (el) el.textContent = t; };
+    for (let i = 0; i < 8; i++) {
+      try { const r = await vsync(dec); if (r.d && (!prev || r.d.getTime() > prev.getTime())) { say2("Fiche client mise à jour : fin d’abonnement le " + r.d.toLocaleDateString("fr-FR") + "."); try { lstRefresh(); } catch (e) {} return; } } catch (e) {}
+      say2("Veo met à jour l’échéance… (" + (i + 1) + "/8)"); await sleep(6000);
     }
-    o.textContent = ok + " vérifié(s) chez Veo, " + ch + " date(s) corrigée(s), " + ko + " introuvable(s) (non gérés par votre compte Veo).";
+    const rec = recFor({ numdecabo: String(dec) });
+    if (rec) { rec.fin = iso(new Date(Math.max(prev ? prev.getTime() : 0, Date.now()) + 30 * (months || 1) * 864e5)); rec.est = 1; rec.mod = Date.now(); putCli(); try { lstRefresh(); } catch (e) {} }
+    say2("Veo n’a pas encore mis à jour l’échéance : la fiche porte une date estimée (" + (rec ? fdt(Date.parse(rec.fin)) : "—") + "), recontrôlée avec « Actualiser les dates ».");
+  }
+  /* Réabonnements faits dans Veo (même en dehors de CLARA) : appliqués aux fiches */
+  let autoBusy = false;
+  async function autoSync() {
+    if (autoBusy) return { n: 0, created: 0 }; autoBusy = true;
+    try { return await autoSync0(); } finally { autoBusy = false; }
+  }
+  async function autoSync0() {
+    const j = await api("/cga-subs?page=1&limit=40&sort=id,DESC"), done = applied(), lim = Date.now() - 10 * 864e5, seen = new Set(); let n = 0, created = 0;
+    for (const x of (j.data || [])) {
+      if ((x.transaction?.status || x.subscription_status) !== "SUCCESSFUL" || ts(x.created_at) < lim || done.has(x.id)) continue;
+      ITEMS[x.id] = x; const dec = String(x.decoder_number || ""); if (!dec) continue;
+      if (!seen.has(dec)) {
+        seen.add(dec);
+        let r = recFor({ numabo: String(x.subscriber_number || ""), numdecabo: dec });
+        if (!r) {
+          const k = String(x.subscriber_number || dec), now = Date.now();
+          r = { k, tel: "", t0: "", tmod: 0, ts: now, mod: now, up: now, src: "man", nom: x.data?.customer_name || "Client Veo", ab: String(x.subscriber_number || ""), dec, mail: "", adr: "", f: String(x.pack_label || ""), deb: "", fin: "", st: "actif", ctr: "", noc: 1 };
+          cli()[k] = r; if (!putCli()) { delete cli()[k]; continue; } created++; try { logAct("Client enregistré (réabonnement Veo détecté)", r); } catch (e) {}
+        }
+        try { await vsync(dec); } catch (e) { continue; }
+        try { logAct("Réabonnement Veo (détecté)", r, { detail: (x.pack_label || "") + " · " + money(x.amount) }); } catch (e) {}
+        n++; await sleep(300);
+      }
+      markApplied(x.id);
+    }
+    putCli(); return { n, created };
+  }
+  let lastAuto = 0;
+  const autoThrottle = () => { if (Date.now() - lastAuto < 18e4) return; lastAuto = Date.now(); autoSync().then(r => { if (r.n) { try { lstRefresh(); } catch (e) {} } }).catch(() => {}); };
+  async function vall(out) {
+    out = (out && out.nodeType) ? out : $q("va"); const say2 = t => { if (out) out.textContent = t; };
+    let det = 0, cre = 0;
+    if (vt) { try { say2("Recherche des réabonnements Veo récents…"); const r = await autoSync(); det = r.n; cre = r.created; } catch (e) { if (/expirée|Identifiants/.test(e.message)) say2(e.message + " — actualisation depuis le serveur CLARA uniquement."); } }
+    const t0 = new Date(); t0.setHours(0, 0, 0, 0); const lim = t0.getTime() + (jr() + 4) * 864e5, old = t0.getTime() - 120 * 864e5;
+    const list = Object.values(cli()).filter(r => (r.dec || r.ab) && (r.est || !r.fin || (parseD(r.fin) && parseD(r.fin).getTime() <= lim && parseD(r.fin).getTime() >= old))).slice(0, 80);
+    let ok = 0, ch = 0, ko = 0, veoOn = !!vt;
+    for (let i = 0; i < list.length; i++) {
+      say2("Actualisation " + (i + 1) + " / " + list.length + "…"); const r = list[i]; let done = false;
+      if (veoOn && r.dec) { try { const o = await vsync(r.dec); ok++; if (o.changed) ch++; done = true; } catch (e) { if (/expirée|Identifiants/.test(e.message)) veoOn = false; } }
+      if (!done) { try { const o = await refreshRec(r); if (!o.err) { ok++; if (o.ch) ch++; done = true; } else if (o.err === "auth") { say2("Session CLARA expirée : reconnectez-vous."); return; } } catch (e) {} }
+      if (!done) ko++; await sleep(350);
+    }
+    say2((det ? det + " réabonnement(s) Veo appliqué(s). " : "") + (cre ? cre + " nouveau(x) client(s) à compléter (contact). " : "") + ok + " fiche(s) actualisée(s)" + (ch ? ", " + ch + " modifiée(s)" : "") + (ko ? ", " + ko + " introuvable(s)" : "") + ".");
     try { lstRefresh(); } catch (e) {}
   }
 
@@ -283,4 +329,6 @@
   $q("vi1").onclick = () => { dg.close(); go("veo"); }; $q("vi2").onclick = () => { dg.close(); ls("veo_later", "1"); };
   let asked = false;
   setInterval(() => { try { if (!asked && typeof token !== "undefined" && token && !vt && !ls("veo_user") && !ls("veo_later")) { asked = true; dg.showModal(); } } catch (e) {} }, 1500);
+  { const sb = $q("sref"); if (sb) sb.onclick = () => vall($q("srefm")); }
+  if (vt) setTimeout(autoThrottle, 2500);
 })();
