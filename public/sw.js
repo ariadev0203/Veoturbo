@@ -1,5 +1,5 @@
 /* CLARA : service worker. Pour publier une mise à jour : modifier index.html, changer VERSION ci-dessous (et APP_VERSION dans index.html), puis remplacer les fichiers sur l'hébergeur. */
-const VERSION = "4.3.0";
+const VERSION = "5.0.0";
 const CACHE = "clara-" + VERSION;
 const CORE = ["./", "index.html", "convertisseur.html", "veo-module.js", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png"];
 

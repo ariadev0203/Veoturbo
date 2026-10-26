@@ -28,10 +28,17 @@
     const go = () => fetch(FN, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ path, method, body, token: vt }) });
     let r = await go();
     if (r.status === 401 && vc && path !== "/auth/login") { await login(vc.u, vc.p); r = await go(); }
-    if (!r.ok) { let m = ""; try { m = String((await r.json()).message || ""); } catch (e) {} throw new Error(r.status === 401 ? "Session Veo expirée : reconnectez-vous" : (m || "Erreur " + r.status)); }
+    if (!r.ok) { let m = ""; try { m = String((await r.json()).message || ""); } catch (e) {} throw new Error(path === "/auth/login" ? (m || "Identifiants Veo Pro incorrects.") : r.status === 401 ? "Session Veo expirée : reconnectez-vous" : (m || "Erreur " + r.status)); }
     return blob ? r.blob() : r.json();
   }
+  const conn = () => { try { return JSON.parse(localStorage.getItem(K("clara_conn")) || "{}") || {}; } catch (e) { return {}; } };
+  let lastTry = 0;
+  async function autoLogin() {
+    const c = conn().veo; if (vt || !c || !c.id || !c.pw || Date.now() - lastTry < 6e4) return !!vt; lastTry = Date.now();
+    try { await login(c.id, c.pw); return true; } catch (e) { return false; }
+  }
   async function login(u, p) { const j = await api("/auth/login", "POST", { username: u, password: p }); vt = j.token; vc = { u, p }; try { sessionStorage.setItem("veo_tk", vt); } catch (e) {} }
+  window.veoLogin = async (u, p) => { await login(u, p); ls("veo_user", u); };
 
   /* ---------- structure ---------- */
   const sec = document.createElement("section"); sec.dataset.p = "veo"; sec.hidden = true;
@@ -40,11 +47,17 @@
   nb.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7l8 11 8-11"/></svg><span>Veo</span>'; nb.onclick = () => go("veo");
   $q("nav").insertBefore(nb, $q("nav").querySelector('[data-to="reabo"]'));
   { const cf = $q("cvf"); if (cf) cf.addEventListener("load", () => { cf.dataset.ok = "1"; }); }
-  const g0 = window.go; window.go = function (p) { const r = g0.apply(this, arguments); if (p === "veo" && !sec.hidden) show(); if (vt && (p === "suivi" || p === "relance" || p === "home")) autoThrottle(); return r; };
+  const g0 = window.go; window.go = function (p) {
+    const r = g0.apply(this, arguments); if (p === "veo" && !sec.hidden) show();
+    if (vt && (p === "suivi" || p === "relance" || p === "home")) autoThrottle();
+    else if (!vt && ["suivi", "relance", "home", "veo"].includes(p) && typeof token !== "undefined" && token) autoLogin().then(ok => { if (ok && p === "veo" && !sec.hidden) show(); else if (ok) autoThrottle(); });
+    return r; };
+  /* déconnexion de CLARA : la session Veo est fermée aussi */
+  const lo0 = window.logout; window.logout = function () { vt = null; vc = null; CAC = {}; Object.keys(ITEMS).forEach(k => delete ITEMS[k]); try { sessionStorage.removeItem("veo_tk"); } catch (e) {} return lo0.apply(this, arguments); };
 
   function show() {
     if (!vt) {
-      sec.innerHTML = `<h1>Veo Pro</h1><div class="vbox"><div class="msg" style="margin:0 0 10px">Identifiez-vous avec votre compte revendeur Veo Pro pour réabonner vos clients, obtenir les factures et suivre vos commissions.</div><label for="vu">Numéro de téléphone Veo Pro</label><input id="vu" type="tel" inputmode="tel" autocomplete="username" value="${E(ls("veo_user"))}"><label for="vp">Mot de passe</label><input id="vp" type="password" autocomplete="current-password"><div class="acts"><button class="btn" id="vl" type="button">Connexion</button></div><div class="msg" id="vm" role="status"></div></div>`;
+      sec.innerHTML = `<h1>Veo Pro</h1><div class="vbox"><div class="msg" style="margin:0 0 10px">Identifiez-vous avec votre compte revendeur Veo Pro pour réabonner vos clients, obtenir les factures et suivre vos commissions.</div><label for="vu">Numéro de téléphone Veo Pro</label><input id="vu" type="tel" inputmode="tel" autocomplete="username" value="${E((conn().veo && conn().veo.id) || ls("veo_user"))}"><label for="vp">Mot de passe</label><input id="vp" type="password" autocomplete="current-password"><div class="acts"><button class="btn" id="vl" type="button">Connexion</button></div><div class="msg" id="vm" role="status"></div></div>`;
       $q("vl").onclick = async () => { const m = $q("vm"); try { m.textContent = "Connexion…"; await login($q("vu").value.trim(), $q("vp").value); ls("veo_user", $q("vu").value.trim()); show(); autoThrottle(); } catch (e) { m.textContent = e.message; } };
       return;
     }
@@ -322,13 +335,6 @@
   };
     { const rr = $q("rrl"); if (rr && rr.parentNode) { [["vb2", "Réabonner (Veo)", () => open(curDec())], ["vc2", "Vérifier (Veo)", chkFn]].forEach(([id, t, fn]) => { if ($q(id)) return; const x = document.createElement("button"); x.type = "button"; x.id = id; x.className = id === "vb2" ? "btn" : "btn alt"; x.textContent = t; x.onclick = fn; rr.parentNode.insertBefore(x, rr); }); } }
 
-  /* ---------- première connexion : proposer l'identification Veo ---------- */
-  const dg = document.createElement("dialog"); dg.id = "vinv";
-  dg.innerHTML = '<h2>Identification Veo Pro</h2><p class="msg">Identifiez-vous sur Veo Pro pour réabonner vos clients, obtenir les factures et vérifier les dates de fin.</p><div class="acts"><button class="btn" id="vi1" type="button">S’identifier maintenant</button><button class="btn alt" id="vi2" type="button">Plus tard</button></div>';
-  document.body.appendChild(dg);
-  $q("vi1").onclick = () => { dg.close(); go("veo"); }; $q("vi2").onclick = () => { dg.close(); ls("veo_later", "1"); };
-  let asked = false;
-  setInterval(() => { try { if (!asked && typeof token !== "undefined" && token && !vt && !ls("veo_user") && !ls("veo_later")) { asked = true; dg.showModal(); } } catch (e) {} }, 1500);
   { const sb = $q("sref"); if (sb) sb.onclick = () => vall($q("srefm")); }
-  if (vt) setTimeout(autoThrottle, 2500);
+  if (vt) setTimeout(autoThrottle, 2500); else if (typeof token !== "undefined" && token) setTimeout(() => autoLogin().then(ok => { if (ok) autoThrottle(); }), 1500);
 })();

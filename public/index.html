@@ -361,54 +361,63 @@ h1{font-size:clamp(24px,7.5vw,34px)}
   </div>
   <div id="lf">
   <div class="fgrp">
-    <div class="frow"><label for="ct">Identifiant</label><input id="ct" autocomplete="username" autocapitalize="off" placeholder="Téléphone ou email"></div>
+    <div class="frow"><label for="ct">Adresse e-mail</label><input id="ct" type="email" autocomplete="username" autocapitalize="off" placeholder="vous@exemple.com"></div>
     <div class="frow"><label for="pw">Mot de passe</label><input id="pw" type="password" autocomplete="current-password" placeholder="Obligatoire">
       <button class="eye" id="eye" type="button" aria-pressed="false" aria-label="Afficher le mot de passe">
         <svg class="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
         <svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg>
       </button></div>
+    <div class="frow"><label for="oc">Google Authenticator</label><input id="oc" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="Code à 6 chiffres"></div>
   </div>
   <div class="seg" id="lmode" role="group" aria-label="Mode d'utilisation" style="grid-template-columns:1fr 1fr;margin:4px 0 12px"><button type="button" data-m="adv" aria-pressed="true">Mode avancé<small style="display:block;font-weight:400;opacity:.75">Toutes les rubriques</small></button><button type="button" data-m="simple" aria-pressed="false">Mode simple<small style="display:block;font-weight:400;opacity:.75">Relance et suivi client</small></button></div>
   <div class="lrow">
-    <label class="rem"><input type="checkbox" id="lk" checked> Rappelez-moi</label>
-    <span class="lnk" id="lf1" aria-disabled="true" title="Bientôt disponible" style="opacity:.4;cursor:not-allowed;pointer-events:none">Mot de passe oublié ?</span>
+    <label class="rem"><input type="checkbox" id="lk" checked> Rappelez-moi (30 jours)</label>
+    <span class="lnk" id="lf1" aria-disabled="true" title="Code de secours : saisissez-le à la place du code à 6 chiffres" style="opacity:.55;pointer-events:none">Code de secours accepté</span>
   </div>
   <button class="btn full" id="lb" type="button">Se connecter</button>
   <div class="msg" id="lm" role="status"></div>
-  <p class="swt">Vous n'avez pas encore de compte ? <button class="lnk" id="gtog" type="button">S'inscrire</button></p>
+  <p class="swt">Pas encore de compte ? <button class="lnk" id="gtog" type="button">Créer un compte</button></p>
   </div>
   <div id="reg" hidden>
-    <h1 class="rtitle">Inscription partenaire</h1>
-    <p class="rsub">Complétez les informations pour demander votre accès</p>
-    <div class="prow"><span>Progression</span><span id="gpc">0%</span></div>
-    <div class="bar"><i id="gbar"></i></div>
-    <label for="gn">Nom <span class=req>*</span></label>
-    <div class="fgrp"><div class="frow"><input id="gn" placeholder="Ex: Dupont" autocomplete="family-name"></div></div>
-    <label for="gpn">Prénom <span class=req>*</span></label>
-    <div class="fgrp"><div class="frow"><input id="gpn" placeholder="Ex: Jean" autocomplete="given-name"></div></div>
-    <label for="gs">Nom de la structure <span class=req>*</span></label>
-    <div class="fgrp"><div class="frow"><input id="gs" placeholder="Ex: Agence Vision Pro" autocomplete="organization"></div></div>
-    <label for="gc">Pays <span class=req>*</span></label>
-    <div class="fgrp"><div class="frow"><input id="gc" placeholder="Ex: Cameroun" autocomplete="country-name"></div></div>
-    <label for="gv">Ville <span class=req>*</span></label>
-    <div class="fgrp"><div class="frow"><input id="gv" placeholder="Ex: Douala" autocomplete="address-level2"></div></div>
-    <label for="gq">Quartier <span class=req>*</span></label>
-    <div class="fgrp"><div class="frow"><input id="gq" placeholder="Ex: Akwa" ></div></div>
-    <label for="gt">Numéro de téléphone <span class=req>*</span></label>
-    <div class="fgrp"><div class="frow"><input id="gt" placeholder="Ex: 699123456" type="tel" inputmode="tel" autocomplete="tel"></div></div>
-    <label for="gp">Mot de passe <span class=req>*</span></label>
-    <div class="fgrp"><div class="frow"><input id="gp" type="password" placeholder="Minimum 8 caractères" autocomplete="new-password">
-      <button class="eye" id="gye" type="button" aria-pressed="false" aria-label="Afficher le mot de passe">
-        <svg class="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
-        <svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg>
-      </button></div></div>
-    <label for="ge">Adresse e-mail</label>
-    <div class="fgrp"><div class="frow"><input id="ge" placeholder="Ex: jean@example.com" type="email" autocomplete="email" autocapitalize="off"></div></div>
-    <label for="gx">Code promo</label>
-    <div class="fgrp"><div class="frow"><input id="gx" placeholder="Ex: CANAL2026" autocapitalize="characters"></div></div>
-    <button class="btn full" id="gb" type="button" disabled>Complétez le formulaire (0%)</button>
-    <div class="msg" id="gm" role="status"></div>
-    <p class="foot" style="margin:6px 0 0"><span class="req">*</span> Champs obligatoires</p>
+    <h1 class="rtitle">Créer un compte CLARA</h1>
+    <p class="rsub">Votre compte est protégé par Google Authenticator</p>
+    <div id="rs1">
+      <label for="ge">Adresse e-mail <span class=req>*</span></label>
+      <div class="fgrp"><div class="frow"><input id="ge" placeholder="vous@exemple.com" type="email" autocomplete="email" autocapitalize="off"></div></div>
+      <label for="gs">Nom de la structure</label>
+      <div class="fgrp"><div class="frow"><input id="gs" placeholder="Ex: Solution Services" autocomplete="organization"></div></div>
+      <label for="gp">Mot de passe <span class=req>*</span></label>
+      <div class="fgrp"><div class="frow"><input id="gp" type="password" placeholder="8 caractères minimum, lettres et chiffres" autocomplete="new-password">
+        <button class="eye" id="gye" type="button" aria-pressed="false" aria-label="Afficher le mot de passe">
+          <svg class="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+          <svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg>
+        </button></div></div>
+      <label for="gp2">Confirmer le mot de passe <span class=req>*</span></label>
+      <div class="fgrp"><div class="frow"><input id="gp2" type="password" autocomplete="new-password"></div></div>
+      <label for="gx">Code d’invitation (si demandé)</label>
+      <div class="fgrp"><div class="frow"><input id="gx" autocapitalize="characters" autocomplete="off"></div></div>
+      <button class="btn full" id="gb" type="button">Créer mon compte</button>
+      <div class="msg" id="gm" role="status"></div>
+    </div>
+    <div id="rs2" hidden>
+      <h2>Activez Google Authenticator</h2>
+      <ol class="msg" style="text-align:left;margin:0 0 10px;padding-left:20px"><li>Installez <b>Google Authenticator</b> sur votre téléphone.</li><li>Touchez le bouton ci-dessous (ou scannez le code, ou saisissez la clé).</li><li>Saisissez le code à 6 chiffres affiché.</li></ol>
+      <a class="btn alt full" id="gotp" href="#" style="display:block;text-align:center">Ouvrir dans Google Authenticator</a>
+      <div id="gqr" style="display:flex;justify-content:center;margin:12px 0"></div>
+      <div class="msg" style="text-align:center">Clé de configuration<br><b id="gkey" style="letter-spacing:.05em;overflow-wrap:anywhere"></b></div>
+      <button class="btn alt full" id="gcp" type="button" style="margin-top:8px">Copier la clé</button>
+      <label for="goc" style="margin-top:12px">Code à 6 chiffres</label>
+      <div class="fgrp"><div class="frow"><input id="goc" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></div></div>
+      <button class="btn full" id="gok" type="button">Activer mon compte</button>
+      <div class="msg" id="gm2" role="status"></div>
+    </div>
+    <div id="rs3" hidden>
+      <h2>Codes de secours</h2>
+      <p class="msg" style="text-align:left">Notez ces 8 codes dans un endroit sûr. Chacun remplace une fois le code de Google Authenticator si vous perdez votre téléphone. <b>Ils ne seront plus affichés.</b></p>
+      <div class="card" style="padding:14px 16px;text-align:center"><b id="gcodes" style="line-height:2;letter-spacing:.06em;overflow-wrap:anywhere"></b></div>
+      <button class="btn alt full" id="gcc" type="button" style="margin-top:8px">Copier les codes</button>
+      <button class="btn full" id="gdone" type="button" style="margin-top:8px">J’ai noté mes codes : continuer</button>
+    </div>
     <p class="swt">Vous avez déjà un compte ? <button class="lnk" id="gback" type="button">Se connecter</button></p>
   </div>
 </section>
@@ -769,6 +778,19 @@ h1{font-size:clamp(24px,7.5vw,34px)}
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px"><button class="btn alt sm" id="fvsn" type="button">Reporter 1 h</button><button class="btn ghost sm" id="fvsk" type="button">Passer</button></div>
 </div></div>
 </div>
+<section data-p="conn" hidden>
+  <h1>Connexions</h1>
+  <p class="msg" style="text-align:left">Renseignez vos accès pour utiliser toutes les fonctionnalités. Ils sont enregistrés uniquement sur cet appareil.</p>
+  <h2>Veo Pro</h2>
+  <div class="card" style="padding:14px 16px"><label for="cvu">Numéro Veo Pro</label><input id="cvu" type="tel" inputmode="tel" autocomplete="off"><label for="cvp">Mot de passe</label><input id="cvp" type="password" autocomplete="off">
+    <div class="acts"><button class="btn" id="cvt" type="button">Tester et enregistrer</button></div><div class="msg" id="cvm" role="status"></div></div>
+  <h2>Moteur de recherche et réactivation</h2>
+  <div class="card" style="padding:14px 16px"><div class="seg" id="cen" role="group" aria-label="Moteur" style="grid-template-columns:1fr 1fr"><button type="button" data-e="vc" aria-pressed="true">VisionsCanal</button><button type="button" data-e="cga" aria-pressed="false">CGA Canal</button></div>
+    <label for="ceid" id="celb">Identifiant</label><input id="ceid" autocomplete="off" autocapitalize="off"><label for="cepw">Mot de passe</label><input id="cepw" type="password" autocomplete="off">
+    <div class="acts"><button class="btn" id="cet" type="button">Tester et enregistrer</button></div><div class="msg" id="cem" role="status"></div>
+    <div class="msg" style="text-align:left">Si un moteur est indisponible, passez à l’autre ici : CLARA continue de fonctionner avec vos données enregistrées.</div></div>
+  <div class="acts"><button class="btn" id="cdone" type="button">Terminer</button><button class="btn alt" id="cskip" type="button">Plus tard</button></div>
+</section>
 </main>
 <dialog id="ctdlg" aria-labelledby="ctt"><h2 id="ctt">Contact du client obligatoire</h2><p class="msg" id="ctp"></p><label for="cti">Téléphone du client</label><input id="cti" type="tel" inputmode="tel" placeholder="9 chiffres, ex. 671080340" autocomplete="off"><div class="msg" id="ctm" role="status"></div><div class="acts"><button class="btn" id="ctok" type="button">Enregistrer le client</button><button class="btn alt" id="ctno" type="button">Annuler</button></div></dialog>
 
@@ -860,41 +882,63 @@ function initLang(){applyLang();
     else if(m.type==="characterData")trNode(m.target);else if(m.type==="attributes")trAttr(m.target,m.attributeName)})}).observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:ATT});
   $("lg").onclick=()=>{lang=lang==="en"?"fr":"en";try{localStorage.setItem("clara_lang",lang)}catch(e){}applyLang();const p=document.querySelector("[data-p]:not([hidden])");if(token&&p)go(p.dataset.p)}}
 
-let token=null,crit="abonne",cur=null,cfg={...DEF},uid="",CLI=null,relPend=null;
+let token=null,crit="abonne",cur=null,cfg={...DEF},uid="",CLI=null,relPend=null,ACCT="",vcTok=null;
 const K=n=>n+"_"+uid;
+const nsOf=a=>{try{return localStorage.getItem("clara_ns_"+a)||a}catch(e){return a}};
+const cexp=t=>{try{return JSON.parse(atob(String(t).split(".")[0].replace(/-/g,"+").replace(/_/g,"/"))).exp||0}catch(e){return 0}};
 function loadCfg(){cfg={...DEF};try{Object.assign(cfg,JSON.parse(localStorage.getItem(K("clara_cfg"))||"{}"));if(cfg.react==="/api/abonne/reactivation")cfg.react=DEF.react;if(cfg.msg===OLDMSG)cfg.msg=DEF.msg}catch(e){}if(!Array.isArray(cfg.sup))cfg.sup=[]}
-try{token=sessionStorage.getItem("tk");uid=sessionStorage.getItem("uid")||"";$("ct").value=localStorage.getItem("ct")||"";
-  if(!token){const k=JSON.parse(localStorage.getItem("clara_keep")||"null");if(k&&k.tk){token=k.tk;uid=k.uid||"";sessionStorage.setItem("tk",token);sessionStorage.setItem("uid",uid)}}}catch(e){}
+try{token=sessionStorage.getItem("tk");uid=sessionStorage.getItem("uid")||"";ACCT=sessionStorage.getItem("cacct")||"";$("ct").value=localStorage.getItem("ct")||"";
+  if(!token){const k=JSON.parse(localStorage.getItem("clara_keep")||"null");if(k&&k.tk){token=k.tk;uid=k.uid||"";ACCT=k.acct||"";sessionStorage.setItem("tk",token);sessionStorage.setItem("uid",uid);sessionStorage.setItem("cacct",ACCT)}}}catch(e){}
+if(token&&(!ACCT||cexp(token)*1000<Date.now())){token=null;uid="";ACCT="";try{sessionStorage.removeItem("tk");sessionStorage.removeItem("uid");sessionStorage.removeItem("cacct");localStorage.removeItem("clara_keep")}catch(e){}}
 loadCfg();
 
 function say(id,t,cls){const e=$(id);e.className="msg "+(cls||"");e.textContent=t}
 function hidePw(){$("pw").type="password";$("eye").setAttribute("aria-pressed","false");$("eye").setAttribute("aria-label","Afficher le mot de passe")}
 function view(){$("login").hidden=!!token;$("app").hidden=!token;document.body.classList.toggle("lg",!token);hidePw();if(token){try{updBadge()}catch(e){}}}
-function logout(t){token=null;relPend=null;uid="";gBootUid=null;GM=null;gTok=null;CLI=null;cfg={...DEF};try{sessionStorage.removeItem("tk");sessionStorage.removeItem("uid");localStorage.removeItem("clara_keep")}catch(e){}view();say("lm",t||"","err")}
+function logout(t){token=null;ACCT="";vcTok=null;relPend=null;uid="";gBootUid=null;GM=null;gTok=null;CLI=null;cfg={...DEF};try{sessionStorage.removeItem("tk");sessionStorage.removeItem("uid");sessionStorage.removeItem("cacct");sessionStorage.removeItem("veo_tk");localStorage.removeItem("clara_keep")}catch(e){}view();say("lm",t||"","err")}
 
+function getConn(){try{return JSON.parse(localStorage.getItem(K("clara_conn"))||"{}")||{}}catch(e){return{}}}
+function setConn(o){try{localStorage.setItem(K("clara_conn"),JSON.stringify(o));return true}catch(e){return false}}
 async function post(path,body,auth){
-  const h={"Content-Type":"application/json"};
-  const u=/^https:\/\//i.test(path)?path:API+path;
-  if(auth&&token&&u.indexOf(API)===0)h.Authorization="Bearer "+token;
-  const r=await fetch(u,{method:"POST",headers:h,body:JSON.stringify(body)});
-  let d=null;try{d=await r.json()}catch(e){}
-  return {status:r.status,data:d};
-}
+  const full=/^https:\/\//i.test(path),u=full?path:API+path,isApi=u.indexOf(API)===0;
+  const call=async()=>{const h={"Content-Type":"application/json"};if(auth&&vcTok&&isApi)h.Authorization="Bearer "+vcTok;
+    const r=await fetch(u,{method:"POST",headers:h,body:JSON.stringify(body)});let d=null;try{d=await r.json()}catch(e){}return {status:r.status,data:d}};
+  if(auth&&!vcTok&&isApi&&path!=="/auth/login")await vcLogin();
+  let x=await call();
+  if(auth&&isApi&&path!=="/auth/login"&&(x.status===401||x.status===403)){vcTok=null;if(await vcLogin())x=await call()}
+  return x}
+async function vcLogin(){const c=getConn().vc;if(!c||!c.id||!c.pw)return false;
+  try{const r=await post("/auth/login",{contact:c.id,password:c.pw},false);if(r.data&&r.data.success&&r.data.token){vcTok=r.data.token;return true}}catch(e){}return false}
+/* ===== Moteurs de recherche / réactivation interchangeables ===== */
+const ENGINES={
+  vc:{hint:"Téléphone ou e-mail de votre compte VisionsCanal",
+    async find(field,v){const body={[field]:v};let r=await post("/api/abonne/search",body,false);if(r.status===401||r.status===403)r=await post("/api/abonne/search",body,true);
+      const d=r.data||{};return {status:r.status,list:Array.isArray(d.abonnes)&&d.abonnes.length?d.abonnes:(d.abonne?[d.abonne]:[])}},
+    async react(path,body){let r=await post(path,body,false);if(r.status===401||r.status===403)r=await post(path,body,true);return r},
+    async test(c){const r=await post("/auth/login",{contact:c.id,password:c.pw},false);return r.data&&r.data.success&&r.data.token?{ok:true,msg:"Connexion réussie."}:{ok:false,msg:(r.data&&r.data.message)||"Identifiants refusés."}}},
+  cga:{hint:"Identifiant de votre compte MyPOS (CGA Canal)",
+    async call(action,extra,c){c=c||getConn().cga||{};let r;r=await fetch("/.netlify/functions/cga",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action,user:c.id,pass:c.pw,...extra})});
+      let d=null;try{d=await r.json()}catch(e){}return {status:r.status,data:d}},
+    async find(field,v){const r=await this.call("search",{value:v});return {status:r.status,list:(r.data&&r.data.abonnes)||[]}},
+    async react(path,body){const a=cur||{};return this.call("reactivate",{numero:a.numabo,contrat:a.numeroContrat})},
+    async test(c){const r=await this.call("test",{},c);return r.status===200&&r.data&&r.data.success?{ok:true,msg:r.data.message||"Connexion réussie."}:{ok:false,msg:(r.data&&r.data.message)||"Identifiants refusés ou moteur indisponible."}}}
+};
+const engId=()=>getConn().engine==="cga"?"cga":"vc";
 
 /* Connexion */
+const CA="/.netlify/functions/clara-auth";
+async function cauth(action,body){let r;try{r=await fetch(CA,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action,...body})})}catch(e){return {status:0,data:{message:"Serveur CLARA injoignable. Vérifiez votre connexion internet."}}}
+  let d={};try{d=await r.json()}catch(e){}if((r.status===404||r.status===502)&&!d.message)d.message="Service de comptes indisponible (fonction non installée).";return {status:r.status,data:d}}
 $("lb").onclick=async()=>{
-  const contact=$("ct").value.trim(),password=$("pw").value;
-  if(!contact||!password){say("lm","Saisissez votre identifiant et votre mot de passe.","err");return}
+  const email=$("ct").value.trim().toLowerCase(),password=$("pw").value,code=$("oc").value.trim();
+  if(!/^\S+@\S+\.\S+$/.test(email)||!password){say("lm","Saisissez votre adresse e-mail et votre mot de passe.","err");return}
+  if(!code){say("lm","Saisissez le code de Google Authenticator (6 chiffres) ou un code de secours.","err");return}
   $("lb").disabled=true;say("lm","Connexion en cours…");
-  try{
-    const r=await post("/auth/login",{contact,password},false);
-    if(r.data&&r.data.success&&r.data.token){
-      enter(r.data.token,contact,nameOf(r.data));
-    }else if(r.status===429){say("lm","Trop de tentatives. Patientez quelques minutes avant de réessayer.","err")}
-    else say("lm",(r.data&&r.data.message)||"Connexion refusée. Vérifiez vos identifiants.","err");
-  }catch(e){say("lm","Impossible de joindre la plateforme. Vérifiez votre connexion internet.","err")}
-  setTimeout(()=>{$("lb").disabled=false},3000);
-};
+  const r=await cauth("login",{email,password,code,remember:$("lk").checked});
+  if(r.status===200&&r.data.token){$("oc").value="";enter(r.data.token,email,"");if(r.data.recoveryLeft!==undefined&&r.data.recoveryLeft<=2)setTimeout(()=>alert("Il ne vous reste que "+r.data.recoveryLeft+" code(s) de secours."),600)}
+  else say("lm",r.data.message||"Connexion refusée.","err");
+  setTimeout(()=>{$("lb").disabled=false},1500)};
+$("oc").onkeydown=e=>{if(e.key==="Enter")$("lb").click()};
 $("pw").onkeydown=e=>{if(e.key==="Enter")$("lb").click()};
 $("eye").onclick=()=>{const show=$("pw").type==="password";$("pw").type=show?"text":"password";$("eye").setAttribute("aria-pressed",String(show));$("eye").setAttribute("aria-label",show?"Masquer le mot de passe":"Afficher le mot de passe");$("pw").focus()};
 $("out").onclick=()=>logout("");
@@ -902,53 +946,41 @@ $("out").onclick=()=>logout("");
 /* Connexion réussie (connexion ou inscription) */
 function nid(c){c=String(c||"").trim().toLowerCase();return c.indexOf("@")>=0?c:c.replace(/\D/g,"").replace(/^(00)?237(?=\d{9}$)/,"")}
 function enter(tk,contact,name){
-  token=tk;uid=nid(contact);CLI=null;$("pw").value="";
-  try{sessionStorage.setItem("tk",token);sessionStorage.setItem("uid",uid);
-    if($("lk").checked){localStorage.setItem("ct",contact);localStorage.setItem("clara_keep",JSON.stringify({tk:token,uid}))}else{localStorage.removeItem("ct");localStorage.removeItem("clara_keep")}
+  token=tk;ACCT=nid(contact);uid=nsOf(ACCT);vcTok=null;CLI=null;$("pw").value="";
+  try{sessionStorage.setItem("tk",token);sessionStorage.setItem("uid",uid);sessionStorage.setItem("cacct",ACCT);
+    if($("lk").checked){localStorage.setItem("ct",contact);localStorage.setItem("clara_keep",JSON.stringify({tk:token,uid,acct:ACCT}))}else{localStorage.removeItem("ct");localStorage.removeItem("clara_keep")}
     /* données d'avant les comptes : reprises par le premier compte qui se connecte */
     ["clara_arch","clara_rel","clara_cfg"].forEach(n=>{const old=localStorage.getItem(n);if(old&&localStorage.getItem(K(n))===null){localStorage.setItem(K(n),old);localStorage.removeItem(n)}})}catch(e){}
   if(name)try{localStorage.setItem(K("clara_name"),name)}catch(e){}
-  loadCfg();CLI=null;migrate();persist();say("lm","");showReg(false);view();restoreDrafts();go(relPend?"relance":"home")}
+  loadCfg();CLI=null;migrate();persist();say("lm","");showReg(false);view();restoreDrafts();go(relPend?"relance":(connNeeded()?"conn":"home"))}
 
-/* Inscription partenaire : même serveur que la connexion */
-const REGDEF={path:"/auth/register",body:'{"name":"{nom}","prenom":"{prenom}","structure":"{structure}","pays":"{pays}","ville":"{ville}","quartier":"{quartier}","telephone":"{tel}","password":"{password}","email":"{email}","codePromo":"{promo}"}'};
-const clean=v=>String(v).trim().replace(/\s+/g," ");
-function gval(){return{nom:clean($("gn").value),prenom:clean($("gpn").value),structure:clean($("gs").value),pays:clean($("gc").value),ville:clean($("gv").value),quartier:clean($("gq").value),
-  tel:normP($("gt").value),password:$("gp").value,email:$("ge").value.trim().toLowerCase(),promo:$("gx").value.trim()}}
-function gprog(){const v=gval(),ok=[v.nom,v.prenom,v.structure,v.pays,v.ville,v.quartier].map(x=>x.length>=2).concat([/^\d{9}$/.test(v.tel),v.password.length>=8]),
-  pct=Math.round(ok.filter(Boolean).length/ok.length*100),b=$("gb");
-  $("gpc").textContent=pct+"%";$("gbar").style.width=pct+"%";b.disabled=pct<100;b.textContent=pct<100?"Complétez le formulaire ("+pct+"%)":"Demander mon accès";return pct}
-["gn","gpn","gs","gc","gv","gq","gt","gp","ge","gx"].forEach(id=>$(id).addEventListener("input",gprog));
-function showReg(on){$("lf").hidden=on;$("reg").hidden=!on;say("gm","");say("lm","");
-  if(on){gprog();window.scrollTo(0,0)}}
+/* ===== Inscription CLARA : e-mail + mot de passe + Google Authenticator ===== */
+let RG=null;
+function regStep(n){["rs1","rs2","rs3"].forEach((id,i)=>$(id).hidden=i+1!==n)}
+function showReg(on){$("lf").hidden=on;$("reg").hidden=!on;say("gm","");say("lm","");if(on){regStep(1);window.scrollTo(0,0)}}
 $("gtog").onclick=()=>showReg(true);$("gback").onclick=()=>showReg(false);
 $("gye").onclick=()=>{const show=$("gp").type==="password";$("gp").type=show?"text":"password";$("gye").setAttribute("aria-pressed",String(show));$("gye").setAttribute("aria-label",show?"Masquer le mot de passe":"Afficher le mot de passe")};
-$("gb").onclick=async()=>{
-  const v=gval();
-  if(gprog()<100){say("gm","Complétez les champs obligatoires.","err");return}
-  if(v.email&&!/^\S+@\S+\.\S+$/.test(v.email)){say("gm","Adresse e-mail invalide.","err");return}
-  const path=REGDEF.path,tpl=REGDEF.body;
-  let body;const e=x=>JSON.stringify(String(x)).slice(1,-1);
-  try{body=JSON.parse(tpl.replace(/\{(\w+)\}/g,(x,k)=>k in v?e(v[k]):x));Object.keys(body).forEach(k=>{if(body[k]==="")delete body[k]})}
-  catch(x){say("gm","Inscription indisponible (configuration invalide).","err");return}
-  const nom=(v.prenom+" "+v.nom).trim();
-  $("gb").disabled=true;say("gm","Envoi de la demande…");
-  try{
-    const r=await post(path,body,false),d=r.data||{};
-    if(r.status===429)say("gm","Trop de tentatives. Patientez quelques minutes avant de réessayer.","err");
-    else if(r.status===409||(r.status===400&&/exist|déjà|deja|already|duplic/i.test(d.message||"")))say("gm",d.message||"Un compte existe déjà avec ce numéro ou cet e-mail. Connectez-vous.","err");
-    else if(r.status===404)say("gm","Service d'inscription indisponible (404). Contactez l'administrateur.","err");
-    else if(r.status>=200&&r.status<300&&d.success!==false){
-      $("gp").value="";
-      if(d.token)enter(d.token,v.tel,nom);
-      else{ /* demande enregistrée : connexion automatique si l'accès est déjà ouvert */
-        let l=null;try{l=await post("/auth/login",{contact:v.tel,password:v.password},false)}catch(x){}
-        if(l&&l.data&&l.data.success&&l.data.token)enter(l.data.token,v.tel,nom);
-        else{$("ct").value=v.tel;$("pw").value="";showReg(false);say("lm",d.message||"Demande envoyée. Connectez-vous avec votre téléphone et votre mot de passe (si votre accès doit être validé, attendez la confirmation).","ok")}}}
-    else say("gm",d.message||"Inscription refusée (code "+r.status+").","err");
-  }catch(x){say("gm","Impossible de joindre la plateforme. Vérifiez votre connexion internet.","err")}
-  gprog()};
-
+$("gb").onclick=async()=>{const email=$("ge").value.trim().toLowerCase(),pw=$("gp").value;
+  if(!/^\S+@\S+\.\S+$/.test(email)){say("gm","Adresse e-mail invalide.","err");return}
+  if(pw.length<8||!/[A-Za-z]/.test(pw)||!/\d/.test(pw)){say("gm","Mot de passe : 8 caractères minimum, avec au moins une lettre et un chiffre.","err");return}
+  if(pw!==$("gp2").value){say("gm","Les deux mots de passe sont différents.","err");return}
+  $("gb").disabled=true;say("gm","Création du compte…");
+  const r=await cauth("register",{email,password:pw,name:$("gs").value.trim(),invite:$("gx").value.trim()});
+  $("gb").disabled=false;
+  if(r.status!==200){say("gm",r.data.message||"Inscription refusée (code "+r.status+").","err");return}
+  RG={email,pw,secret:r.data.secret,uri:r.data.otpauth};showOtp()};
+function qr(t){const el=$("gqr");el.innerHTML="";const mk=()=>{try{new QRCode(el,{text:t,width:176,height:176})}catch(e){}};
+  if(window.QRCode)mk();else{const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";sc.onload=mk;document.head.appendChild(sc)}}
+function showOtp(){say("gm","");regStep(2);$("gkey").textContent=RG.secret.replace(/(.{4})/g,"$1 ").trim();$("gotp").href=RG.uri;$("goc").value="";say("gm2","");qr(RG.uri)}
+$("gcp").onclick=async()=>{try{await navigator.clipboard.writeText(RG.secret);say("gm2","Clé copiée.","ok")}catch(e){say("gm2","Copie impossible : recopiez la clé à la main.","err")}};
+$("gok").onclick=async()=>{const code=$("goc").value.replace(/\D/g,"");
+  if(code.length!==6){say("gm2","Saisissez le code à 6 chiffres affiché par Google Authenticator.","err");return}
+  $("gok").disabled=true;say("gm2","Vérification…");
+  const r=await cauth("confirm",{email:RG.email,password:RG.pw,code,remember:true});$("gok").disabled=false;
+  if(r.status!==200||!r.data.token){say("gm2",r.data.message||"Code incorrect.","err");return}
+  RG.session=r.data.token;RG.codes=r.data.recovery||[];$("gcodes").textContent=RG.codes.join("   ");regStep(3)};
+$("gcc").onclick=async()=>{try{await navigator.clipboard.writeText(RG.codes.join("\n"));$("gcc").textContent="Codes copiés"}catch(e){$("gcc").textContent="Copie impossible : notez-les à la main"}};
+$("gdone").onclick=()=>{const g=RG;RG=null;["gp","gp2","gx"].forEach(i=>$(i).value="");enter(g.session,g.email,"")};
 
 /* Accueil */
 function nameOf(d){const u=(d&&(d.user||d.utilisateur||d.data))||d||{};
@@ -988,6 +1020,36 @@ document.querySelectorAll("#wcrit button").forEach(b=>b.onclick=()=>{
   $("wq").placeholder=HOLD[wk][0];$("wq").inputMode=HOLD[wk][1];$("wq").value="";say("wm","");$("wres").innerHTML="";$("wq").focus()});
 $("wgo").onclick=wsearch;$("wq").onkeydown=e=>{if(e.key==="Enter")wsearch()};
 $("wout").onclick=()=>logout("");
+
+
+/* ===== Connexions : Veo Pro + moteur de recherche (premier lancement et Paramètres) ===== */
+function connNeeded(){const c=getConn();return !c.skip&&!(c.veo&&c.veo.id)&&!(c.vc&&c.vc.id)&&!(c.cga&&c.cga.id)}
+const selEng=()=>($("cen").querySelector('[aria-pressed="true"]')||{dataset:{e:"vc"}}).dataset.e;
+function connEng(e){const c=getConn()[e]||{};$("ceid").value=c.id||"";$("cepw").value=c.pw||"";$("celb").textContent=ENGINES[e].hint}
+function connShow(){const c=getConn(),e=c.engine==="cga"?"cga":"vc";$("cvu").value=(c.veo&&c.veo.id)||"";$("cvp").value=(c.veo&&c.veo.pw)||"";
+  $("cen").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.e===e)));connEng(e);say("cvm","");say("cem","")}
+$("cen").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("cen").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));connEng(b.dataset.e)});
+$("cvt").onclick=async()=>{const id=$("cvu").value.trim(),pw=$("cvp").value;
+  if(!id||!pw){say("cvm","Saisissez le numéro et le mot de passe Veo Pro.","err");return}
+  if(!window.veoLogin){say("cvm","Module Veo indisponible. Rechargez l’application.","err");return}
+  $("cvt").disabled=true;say("cvm","Test de connexion…");
+  try{await window.veoLogin(id,pw);const c=getConn();c.veo={id,pw};setConn(c);say("cvm","Veo Pro connecté et enregistré sur cet appareil.","ok")}catch(e){say("cvm",(e&&e.message)||"Connexion refusée.","err")}
+  $("cvt").disabled=false};
+function adoptNs(e,id){if(e!=="vc"||!ACCT)return;const n=nid(id);if(n===uid)return;
+  try{if(localStorage.getItem("clara_ns_"+ACCT)||localStorage.getItem("clara_cli_"+n)===null)return}catch(x){return}
+  if(!confirm("Des clients enregistrés avec ce compte VisionsCanal existent sur cet appareil. Les reprendre dans votre compte CLARA ?"))return;
+  try{localStorage.setItem("clara_conn_"+n,localStorage.getItem(K("clara_conn"))||"{}");localStorage.setItem("clara_ns_"+ACCT,n);sessionStorage.setItem("uid",n);
+    const k=JSON.parse(localStorage.getItem("clara_keep")||"null");if(k){k.uid=n;localStorage.setItem("clara_keep",JSON.stringify(k))}}catch(x){return}
+  location.reload()}
+$("cet").onclick=async()=>{const e=selEng(),id=$("ceid").value.trim(),pw=$("cepw").value;
+  if(!id||!pw){say("cem","Saisissez l’identifiant et le mot de passe.","err");return}
+  $("cet").disabled=true;say("cem","Test de connexion…");let r;
+  try{r=await ENGINES[e].test({id,pw})}catch(x){r={ok:false,msg:"Moteur injoignable pour le moment."}}
+  $("cet").disabled=false;
+  if(!r.ok){say("cem",r.msg,"err");return}
+  const c=getConn();c.engine=e;c[e]={id,pw};setConn(c);vcTok=null;say("cem",r.msg+" Moteur enregistré sur cet appareil.","ok");adoptNs(e,id)};
+$("cdone").onclick=$("cskip").onclick=()=>{const c=getConn();c.skip=1;setConn(c);go("home")};
+(function(){const h=document.querySelector('[data-p="params"] h1');if(h){const b=document.createElement("button");b.type="button";b.className="btn alt full";b.id="pconn";b.style.margin="8px 0";b.textContent="Connexions : Veo Pro et moteur de recherche";b.onclick=()=>go("conn");h.insertAdjacentElement("afterend",b)}})();
 
 /* ===== Favoris (V2.0) : rappel programmé à l'avance, relance automatique par WhatsApp ou SMS =====
    Champs ajoutés à la fiche : fav (1 = favori), favts, rem = {ts (heure du rappel), canal "wa"|"sms", auto 0|1, done (heure de lancement)}.
@@ -1155,7 +1217,7 @@ function go(p){
   try{if(window.lsMerge)lsMerge()}catch(e){}
   document.querySelectorAll("[data-p]").forEach(s=>s.hidden=s.dataset.p!==p);
   document.querySelectorAll("#nav button").forEach(b=>{if(b.dataset.to===p)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
-  if(p==="home")showHome();if(p==="reabo")showReabo();if(p==="relance"){rPick=false;showRelance()}if(p==="params"){showParams();try{thRender()}catch(e){}}if(p==="histo")showHisto();if(p==="suivi"){showSuivi();updNotif()}if(p==="search")updBadge();if(p==="listing"&&window.showListing)showListing();if(p==="groupe")showGroupe();if(p==="convert")showConvert();
+  if(p==="home")showHome();if(p==="reabo")showReabo();if(p==="relance"){rPick=false;showRelance()}if(p==="params"){showParams();try{thRender()}catch(e){}}if(p==="histo")showHisto();if(p==="suivi"){showSuivi();updNotif()}if(p==="search")updBadge();if(p==="listing"&&window.showListing)showListing();if(p==="groupe")showGroupe();if(p==="conn")connShow();if(p==="convert")showConvert();
   try{fvStars()}catch(e){}
   window.scrollTo(0,0);
 }
@@ -1169,12 +1231,7 @@ function norm(k,v){v=v.trim();
   return v.replace(/\s/g,"")}
 
 /* Interroge le serveur (lecture seule) */
-async function srvFind(field,v){
-  const body={[field]:v};
-  let r=await post("/api/abonne/search",body,false);
-  if(r.status===401||r.status===403)r=await post("/api/abonne/search",body,true);
-  const d=r.data||{};
-  return {status:r.status,list:Array.isArray(d.abonnes)&&d.abonnes.length?d.abonnes:(d.abonne?[d.abonne]:[])}}
+async function srvFind(field,v){return ENGINES[engId()].find(field,v)}
 
 /* Cherche dans les enregistrements de l'appareil : valeur exacte d'abord, sinon correspondance partielle (4 caractères minimum) */
 function findLocal(c,v){
@@ -1205,11 +1262,11 @@ async function wsearch(){
       if(!seen[key]){seen[key]=1;out.push(a)}});
     loc.forEach(r=>{if(!seen[r.k]){seen[r.k]=1;out.push(curOf(r))}});
     if(dirty)putCli();
-    const warn=st==="ok"?"":{auth:"Session expirée : seuls vos enregistrements ont été consultés. Reconnectez-vous pour interroger le serveur.",
+    const warn=st==="ok"?"":{auth:"Moteur de recherche : identifiants refusés ou non configurés (voir Connexions). Résultats issus de vos enregistrements.",
       busy:"Serveur : trop de requêtes. Résultats issus de vos enregistrements.",
       net:"Serveur injoignable. Résultats issus de vos enregistrements."}[st];
     if(!out.length){
-      if(st==="auth"){logout("Session expirée. Reconnectez-vous.");$("wgo").disabled=false;return}
+      if(st==="auth"){say("wm","Le moteur de recherche refuse vos identifiants ou n’est pas configuré : vérifiez Connexions (Paramètres).","err");$("wgo").disabled=false;return}
       say("wm",st==="busy"?"Trop de requêtes. Patientez un instant.":st==="net"?"La requête a été bloquée ou la plateforme ne répond pas, et aucun enregistrement ne correspond. Réessayez.":"Aucun abonné trouvé (serveur et enregistrements). Vérifiez la valeur saisie ou changez de critère.","err")}
     else if(out.length===1){say("wm",warn||"");choose(out[0])}
     else{say("wm",out.length+" abonnés trouvés. Touchez le bon abonné."+(warn?" "+warn:""),"ok");
@@ -1254,10 +1311,9 @@ $("ryes").onclick=async()=>{
   rsend=true;$("ryes").disabled=true;$("rbtns").hidden=true;$("rbusy").hidden=false;say("rdx","");
   let txt="",cls="",wl="";
   try{
-    let r=await post(path,body,false);
-    if(r.status===401||r.status===403)r=await post(path,body,true);
-    if(r.status===401||r.status===403){$("rdlg").close();rsend=false;logout("Session expirée. Reconnectez-vous.");return}
-    if(r.status===429){txt="Trop de requêtes. Patientez un instant.";cls="err"}
+    let r=await ENGINES[engId()].react(path,body);
+    if(r.status===401||r.status===403){txt="Identifiants refusés par le moteur : vérifiez-les dans Connexions (Paramètres).";cls="err"}
+    else if(r.status===429){txt="Trop de requêtes. Patientez un instant.";cls="err"}
     else if(r.status>=200&&r.status<300&&!(r.data&&r.data.success===false)){txt=(r.data&&r.data.message)||"Signal envoyé. Le décodeur devrait se réactiver sous quelques minutes.";cls="ok";const m=String((r.data&&r.data.whatsappLink)||"").match(/^https:\/\/wa\.me\/\d+(\?.*)?$/);if(m)wl="https://wa.me/"+(cfg.wa||DEF.wa)+(m[1]||"")}
     else if(r.status===502||r.status===500||(r.data&&r.data.data&&r.data.data.errorCode)){const d=r.data&&r.data.data||{};txt="Échec de l'envoi du signal à Canal+"+(d.detail?" : "+d.detail:"")+". Réessayez dans quelques instants.";cls="err"}
     else if(r.status===404){txt="Adresse introuvable (404) : vérifiez l'adresse de réactivation dans Paramètres.";cls="err"}
@@ -1993,7 +2049,7 @@ window.addEventListener("online",()=>{if(token&&gOn())gSched()});
 document.addEventListener("visibilitychange",()=>{if(!document.hidden&&token&&gOn()){const m=gMeta();if(!m.last||Date.now()-m.last>6e4)gSched()}});
 
 /* ===== PWA : installation et mises à jour (hébergement https uniquement) ===== */
-const APP_VERSION="4.3.0";
+const APP_VERSION="5.0.0";
 if(/netlify/i.test(location.hostname))document.documentElement.classList.add("nb");   /* le badge « Powered by Netlify » masque le bas de l'écran */
 let swReg=null,dip=null,updating=false;
 function showUpd(w){$("upd").hidden=false;$("updb").onclick=()=>{updating=true;w.postMessage("SKIP_WAITING")}}
@@ -2222,7 +2278,7 @@ async function runCheck(resume){if(running)return;load();
   await Promise.all([worker(),worker(),worker()]);running=false;
   if(S!==myS||SU!==uid)return;
   const o=runStat();
-  if(authFail){save();logout("Session expirée. Reconnectez-vous.");return}
+  if(authFail){save();say("lscm","Moteur de recherche : identifiants refusés. Vérifiez Connexions (Paramètres).","err");return}
   if(!stopReq)S.run.done=o.err===0;
   save();if(chkOpen())rChk();
   const pend=all.filter(x=>{const c=S.chk[x.k];return c&&c.run===t0&&c.r==="reabo"&&!c.ap}).length;
